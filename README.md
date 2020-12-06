@@ -22,8 +22,8 @@ https://developers.google.com/docs/api/quickstart/nodejs) and store it as
 `googleapis-credentials.json` in this directory.
 2. Create `discord-token.json` in this directory consisting of your Discord
 bot's token surrounded by double quotes. You can find the token by going [here](
-https://discord.com/developers/applications), selecting your bot, clicking on
-Bot in the left-hand sidebar.
+https://discord.com/developers/applications), selecting your bot, and then
+navigating to the "Bot" tab in the left-hand sidebar.
 3. Update [this line](
 https://github.com/Sartaglo/tournamentorganizer/blob/541b5ae1b7a97f774146ed3340f0c794c04c020d/act-on-message.js#L551)
 in the code to whomever you wish the bot to respond to.
