@@ -1,3 +1,4 @@
 /node_modules/
 /googleapis-credentials.json
 /googleapis-token.json
+/discord-token.json
