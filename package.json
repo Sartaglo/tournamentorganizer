@@ -1,6 +1,7 @@
 {
     "private": true,
     "dependencies": {
+        "discord.js": "12.5.1",
         "googleapis": "66.0.0"
     },
     "scripts": {
