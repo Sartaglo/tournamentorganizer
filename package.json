@@ -2,5 +2,8 @@
     "private": true,
     "dependencies": {
         "googleapis": "66.0.0"
+    },
+    "scripts": {
+        "start": "node main.js"
     }
 }
