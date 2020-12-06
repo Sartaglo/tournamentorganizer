@@ -5,10 +5,10 @@ Wii tournament in Mogi Lounge (https://discord.gg/HkbxJAM).
 
 ## Setup
 
-Currently, I am running the bot locally and relying on local file storage to
-send text files on Discord and keep back-ups of the current state in case
-something goes wrong. The bot also only responds to me and cannot be added to
-servers by anyone else.
+Currently, I am running the bot locally during development and relying on local
+file storage to send text files on Discord and keep back-ups of the current
+state in case something goes wrong. The bot also only responds to me and cannot
+be added to servers by anyone else.
 
 Nevertheless, the code can still be ran by anyone with the proper setup. Here
 are the prerequisites:
