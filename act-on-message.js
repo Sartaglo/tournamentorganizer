@@ -12,6 +12,8 @@ let allNonHostTeams = [];
 
 let currentTeamSize = 1;
 
+let unitName = "team";
+
 let currentRoundNumber = 1;
 
 const rounds = new Map();
@@ -124,6 +126,7 @@ const initialize = async (
             allHostTeams = [];
             allNonHostTeams = [];
             currentTeamSize = teamSize;
+            unitName = teamSize === 1 ? "player" : "team";
             currentRoundNumber = 1;
             const content = response.data.body.content;
             let contentIndex = 0;
@@ -188,6 +191,57 @@ const setRoundNumber = async (channel, roundNumber) => {
     await channel.send("Switched to round " + roundNumber + ".");
 }
 
+const sendUpdate = async (
+    channel,
+    action,
+    currentRound,
+    roomNumber,
+    hostTeams,
+    nonHostTeams,
+    advancementsByRoom,
+    advancementCount,
+) => {
+    const teamCount = currentRound.hostTeams.length
+        + currentRound.nonHostTeams.length;
+    await channel.send(
+        action
+        + " "
+        + hostTeams.length
+        + " host "
+        + unitName
+        + (hostTeams.length === 1 ? "" : "s")
+        + " and "
+        + nonHostTeams.length
+        + " non-host "
+        + unitName
+        + ". Room "
+        + roomNumber
+        + " of round "
+        + (currentRoundNumber - 1)
+        + " now has "
+        + advancementsByRoom.get(roomNumber).length
+        + "/"
+        + (advancementCount / currentTeamSize)
+        + " advanced "
+        + unitName
+        + ". There are now "
+        + currentRound.hostTeams.length
+        + " host "
+        + unitName
+        + (currentRound.hostTeams.length === 1 ? "" : "s")
+        + " and "
+        + currentRound.nonHostTeams.length
+        + " non-host "
+        + unitName
+        + (currentRound.nonHostTeams.length === 1 ? "" : "s")
+        + " for a total of "
+        + teamCount
+        + " "
+        + unitName
+        + (teamCount === 1 ? "" : "s")
+        + ".");
+}
+
 const advanceTeams = (currentRound, advancements, teams) => {
     let hostTeams = [];
     let nonHostTeams = [];
@@ -211,11 +265,6 @@ const advanceTeams = (currentRound, advancements, teams) => {
 };
 
 const advance = async (channel, roomNumber, teams) => {
-    if (!rounds.has(currentRoundNumber - 1)
-        || !rounds.has(currentRoundNumber)) {
-        return;
-    }
-
     const {
         advancementsByRoom,
         advancementCount,
@@ -230,36 +279,16 @@ const advance = async (channel, roomNumber, teams) => {
         hostTeams,
         nonHostTeams,
     } = advanceTeams(currentRound, advancementsByRoom.get(roomNumber), teams);
-    const teamCount = currentRound.hostTeams.length
-        + currentRound.nonHostTeams.length;
-    await channel.send(
-        "Advanced "
-        + hostTeams.length
-        + " host team"
-        + (hostTeams.length === 1 ? "" : "s")
-        + " and "
-        + nonHostTeams.length
-        + " non-host teams. Room "
-        + roomNumber
-        + " of round "
-        + (currentRoundNumber - 1)
-        + " now has "
-        + advancementsByRoom.get(roomNumber).length
-        + "/"
-        + (advancementCount / currentTeamSize)
-        + " advanced teams. There are now "
-        + currentRound.hostTeams.length
-        + " host team"
-        + (currentRound.hostTeams.length === 1 ? "" : "s")
-        + " and "
-        + currentRound.nonHostTeams.length
-        + " non-host team"
-        + (currentRound.nonHostTeams.length === 1 ? "" : "s")
-        + " for a total of "
-        + teamCount
-        + " team"
-        + (teamCount === 1 ? "" : "s")
-        + ".");
+    await sendUpdate(
+        channel,
+        "Advanced",
+        currentRound,
+        roomNumber,
+        hostTeams,
+        nonHostTeams,
+        advancementsByRoom,
+        advancementCount,
+    );
 };
 
 const unadvanceTeams = (currentRound, advancements, teams) => {
@@ -306,17 +335,20 @@ const unadvanceTeams = (currentRound, advancements, teams) => {
 };
 
 const unadvance = async (channel, roomNumber, teams) => {
-    if (!rounds.has(currentRoundNumber - 1)
-        || !rounds.has(currentRoundNumber)) {
-        return;
-    }
-
     const {
         advancementsByRoom,
         advancementCount,
     } = rounds.get(currentRoundNumber - 1);
 
     if (!advancementsByRoom.has(roomNumber)) {
+        await channel.send(
+            "Room "
+            + roomNumber
+            + " of round "
+            + (currentRoundNumber - 1)
+            + " has not been initialized.",
+        );
+
         return;
     }
 
@@ -325,40 +357,24 @@ const unadvance = async (channel, roomNumber, teams) => {
         hostTeams,
         nonHostTeams,
     } = unadvanceTeams(currentRound, advancementsByRoom.get(roomNumber), teams);
-    const teamCount = currentRound.hostTeams.length
-        + currentRound.nonHostTeams.length;
-    await channel.send(
-        "Advanced "
-        + hostTeams.length
-        + " host team"
-        + (hostTeams.length === 1 ? "" : "s")
-        + " and "
-        + nonHostTeams.length
-        + " non-host teams. Room "
-        + roomNumber
-        + " of round "
-        + (currentRoundNumber - 1)
-        + " now has "
-        + advancementsByRoom.get(roomNumber).length
-        + "/"
-        + (advancementCount / currentTeamSize)
-        + " advanced teams. There are now "
-        + currentRound.hostTeams.length
-        + " host team"
-        + (currentRound.hostTeams.length === 1 ? "" : "s")
-        + " and "
-        + currentRound.nonHostTeams.length
-        + " non-host team"
-        + (currentRound.nonHostTeams.length === 1 ? "" : "s")
-        + " for a total of "
-        + teamCount
-        + " team"
-        + (teamCount === 1 ? "" : "s")
-        + ".");
+    await sendUpdate(
+        channel,
+        "Unadvanced",
+        currentRound,
+        roomNumber,
+        hostTeams,
+        nonHostTeams,
+        advancementsByRoom,
+        advancementCount,
+    );
 }
 
-const getRoomParameters = () => {
+const getRoomParameters = async () => {
     if (!rounds.has(currentRoundNumber)) {
+        await channel.send(
+            "Round " + currentRoundNumber + " has not been initialized.",
+        );
+
         return;
     }
 
@@ -435,10 +451,14 @@ const getRoomParameters = () => {
 
 const makeRooms = async (channel) => {
     if (!rounds.has(currentRoundNumber)) {
+        await channel.send(
+            "Round " + currentRoundNumber + " has not been initialized.",
+        );
+
         return;
     }
 
-    const { roomCount, advancementCount } = getRoomParameters();
+    const { roomCount, advancementCount } = await getRoomParameters();
 
     if (roomCount === null) {
         await channel.send("At most 768 players are supported.");
@@ -454,7 +474,8 @@ const makeRooms = async (channel) => {
         const difference = roomCount - hostTeams.length;
         await channel.send(
             difference
-            + " more host"
+            + " more host "
+            + unitName
             + (difference === 1 ? " is" : "s are")
             +
             " needed.",
@@ -482,14 +503,28 @@ const makeRooms = async (channel) => {
     );
     const fileName = "round-" + currentRoundNumber + "-rooms.txt";
     fs.writeFileSync(fileName, roomTexts.join("\r\n\r\n"));
+    const advancingTeamCount = advancementCount / currentTeamSize;
     await channel.send(
-        "Top " + (advancementCount / currentTeamSize) + " teams advance.",
+        "Room generation complete. Advance the top "
+        + advancingTeamCount
+        + " "
+        + unitName
+        + (advancingTeamCount === 1 ? "" : "s")
+        + " in each room.",
         { files: [fileName] }
     );
 };
 
 const getRoomResults = async (channel, roomNumber) => {
     if (!rounds.has(currentRoundNumber - 1)) {
+        await channel.send(
+            currentRoundNumber === 1
+                ? "You are on round 1. Switch to round 2."
+                : ("Round "
+                    + (currentRoundNumber - 1)
+                    + " has not been initialized."),
+        );
+
         return;
     }
 
@@ -517,7 +552,7 @@ module.exports = {
             return;
         }
 
-        const segments = message.content.split(" ");
+        const segments = message.content.replace(/ +/g, " ").split(" ");
 
         if (segments.length < 2 || segments[0] !== botMention) {
             return;
@@ -531,10 +566,16 @@ module.exports = {
             const hostCount = Number.parseInt(parameters[2], 10);
             const nonHostCount = Number.parseInt(parameters[3], 10);
 
-            if (documentId.length === 0
+            if (typeof documentId !== 'string'
+                || documentId.length === 0
                 || ![1, 2, 3].includes(teamSize)
                 || !Number.isSafeInteger(hostCount)
                 || !Number.isSafeInteger(nonHostCount)) {
+                await message.channel.send(
+                    "Usage: initialize"
+                    + " <documentId> <teamSize> <hostCount> <nonHostCount>",
+                );
+
                 return;
             }
 
@@ -549,6 +590,8 @@ module.exports = {
             const roundNumber = Number.parseInt(parameters[0], 10);
 
             if (!Number.isSafeInteger(roundNumber)) {
+                await message.channel.send("Usage: round <roundNumber>");
+
                 return;
             }
 
@@ -559,18 +602,28 @@ module.exports = {
             const roomNumber = Number.parseInt(parameters[0], 10);
 
             if (!Number.isSafeInteger(roomNumber)) {
+                await message.channel.send("Usage: results <roomNumber>");
+
                 return;
             }
 
             await getRoomResults(message.channel, roomNumber);
         } else {
-            if (!rounds.has(currentRoundNumber)) {
-                return;
-            }
-
+            const usage = "Usage: [un]advance <roomNumber>\n"
+                + "<registration 1>\n"
+                + "[...]";
             const lines = message.content.split("\n");
 
             if (lines.length < 1) {
+                await message.channel.send(usage);
+
+                return;
+            }
+
+            if (typeof parameters[0] !== 'string'
+                || !Array.isArray(parameters[0].split("\n"))) {
+                await message.channel.send(usage);
+
                 return;
             }
 
@@ -580,6 +633,30 @@ module.exports = {
             );
 
             if (!Number.isSafeInteger(roomNumber)) {
+                await message.channel.send(usage);
+
+                return;
+            }
+
+            if (!rounds.has(currentRoundNumber - 1)) {
+                await message.channel.send(
+                    currentRoundNumber === 1
+                        ? "You are on round 1. Switch to round 2."
+                        : ("Round "
+                            + (currentRoundNumber - 1)
+                            + " has not been initialized."),
+                );
+
+                return;
+            }
+
+            if (!rounds.has(currentRoundNumber)) {
+                await message.channel.send(
+                    "Round "
+                    + currentRoundNumber
+                    + " has not been initialized.",
+                );
+
                 return;
             }
 
