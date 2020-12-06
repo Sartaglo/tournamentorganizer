@@ -1,0 +1,74 @@
+# Tournament Organizer
+
+This is a Discord bot designed to ameliorate the process of running a Mario Kart
+Wii tournament in Mogi Lounge (https://discord.gg/HkbxJAM).
+
+## Setup
+
+Currently, I am running the bot locally and relying on local file storage to
+send text files on Discord and keep back-ups of the current state in case
+something goes wrong. The bot also only responds to me and cannot be added to
+servers by anyone else.
+
+Nevertheless, the code can still be ran by anyone with the proper setup. Here
+are the prerequisites:
+- A local copy of the repository;
+- Node.js and NPM;
+- Google Docs API access; and
+- a Discord bot.
+
+1. Download `credential.json` as explained [here](
+https://developers.google.com/docs/api/quickstart/nodejs) and store it as
+`googleapis-credentials.json` in this directory.
+2. Create `discord-token.json` in this directory consisting of your Discord
+bot's token surrounded by double quotes. You can find the token by going [here](
+https://discord.com/developers/applications), selecting your bot, clicking on
+Bot in the left-hand sidebar.
+3. Update [this line](
+https://github.com/Sartaglo/tournamentorganizer/blob/541b5ae1b7a97f774146ed3340f0c794c04c020d/act-on-message.js#L551)
+in the code to whomever you wish the bot to respond to.
+3. Run `npm install` in this directory and then run `npm start`.
+4. Copy and paste the provided URL to authorize your Google account, bypassing
+the verification warning as explained [here](
+https://developers.google.com/docs/api/quickstart/nodejs#this_app_isnt_verified).
+This will create `googleapis-token.json` for repeated use.
+5. Add your bot to a server and permit it to send and receive messages in the
+channels of your choosing.
+
+## Commands
+
+Commands are executed by mentioning the bot and then providing the command and
+any parameters as needed.
+
+`initialize <documentId> <teamSize> <hostCount> <nonHostCount>`
+
+Loads registrations from the identified Google Doc according to the parameters.
+
+`rooms`
+
+Randomly generates rooms for the current round, choosing the best number of
+rounds corresponding to the number of players and team size that divides evenly
+into a final room.
+
+`round <roundNumber>`
+
+Switches the current round, mainly so that teams can be advanced into the next
+round.
+
+```
+advance <roomNumber>
+<registration>
+[...]
+```
+
+Adds the given teams, each on its own line, to the current round, so that they
+will be part of the current round's next room generation.
+
+```
+unadvance <roomNumber>
+<registration>
+[...]
+```
+
+Removes the given teams, each on its own line, from the current round, so that
+they will not be part of the current round's room generation.
