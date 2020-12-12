@@ -53,8 +53,8 @@ into a final room.
 
 `round <roundNumber>`
 
-Switches the current round, mainly so that next round's rooms can be generated
-and teams can start being advanced from that round.
+Switches to the identified round, mainly so that next round's rooms can be
+generated and teams can start being advanced from that round.
 
 ```
 advance <roomNumber>
