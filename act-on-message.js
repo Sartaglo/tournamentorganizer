@@ -603,7 +603,8 @@ const getRoundStatus = async (channel) => {
 }
 
 module.exports = {
-    actOnMessage: async (message) => {
+    actOnMessage: async (client, message) => {
+        const authorisAdmin = message.author.id === "484822486861611011";
         const roles = [
             "Boss",
             "Higher Tier Arbitrator",
@@ -611,7 +612,7 @@ module.exports = {
             "Custom Track Arbitrator",
         ];
 
-        if (message.author.id !== "484822486861611011"
+        if (!authorisAdmin
             && !roles.includes(message.member.roles.highest.name)) {
             return;
         }
@@ -676,6 +677,13 @@ module.exports = {
             await getRoomResults(message.channel, roomNumber);
         } else if (commandWithoutPrefix === "status") {
             await getRoundStatus(message.channel);
+        } else if (commandWithoutPrefix === "stop") {
+            if (!authorisAdmin) {
+                return;
+            }
+
+            await message.channel.send("Goodbye.");
+            client.destroy();
         } else {
             const usage = "Usage: [un]advance <roomNumber>\n"
                 + "<registration 1>\n"
