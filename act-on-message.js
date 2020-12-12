@@ -604,7 +604,15 @@ const getRoundStatus = async (channel) => {
 
 module.exports = {
     actOnMessage: async (message) => {
-        if (message.author.id !== "484822486861611011") {
+        const roles = [
+            "Boss",
+            "Higher Tier Arbitrator",
+            "Lower Tier Arbitrator",
+            "Custom Track Arbitrator",
+        ];
+
+        if (message.author.id !== "484822486861611011"
+            && !roles.includes(message.member.roles.highest.name)) {
             return;
         }
 
