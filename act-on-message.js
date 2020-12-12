@@ -487,7 +487,11 @@ const makeRooms = async (channel) => {
 
     const hosts = shuffle(hostTeams).slice(0, roomCount);
     const rooms = hosts.map((host) => [host]);
-    rooms.forEach((_, index) => advancementsByRoom.set(index + 1, []));
+    rooms.forEach(
+        (_, index) => {
+            advancementsByRoom.set(index + 1, []);
+        },
+    );
     hostTeams
         .filter((team) => hosts.indexOf(team) === -1)
         .concat(nonHostTeams)
