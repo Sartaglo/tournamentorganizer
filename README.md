@@ -3,15 +3,10 @@
 This is a Discord bot designed to ameliorate the process of running a Mario Kart
 Wii tournament in Mogi Lounge (https://discord.gg/HkbxJAM).
 
-## Setup
+## Local Setup
 
-Currently, I am running the bot locally during development and relying on local
-file storage to send text files on Discord and keep back-ups of the current
-state in case something goes wrong. The bot also only responds to me and cannot
-be added to servers by anyone else.
-
-Nevertheless, the code can still be ran by anyone with the proper setup. Here
-are the prerequisites:
+If you wish to set up your own bot and run this code locally, here are the
+prerequisites and the steps to do so:
 - A local copy of the repository;
 - Node.js and NPM;
 - Google Docs API access; and
@@ -26,7 +21,9 @@ https://discord.com/developers/applications), selecting your bot, and then
 navigating to the "Bot" tab in the left-hand sidebar.
 3. Update [this line](
 https://github.com/Sartaglo/tournamentorganizer/blob/b9f389fd8114e461aa2cc06f7e1e8427fcae95f6/act-on-message.js#L614)
-in the code to whomever you wish the bot to respond to.
+in the code to whomever you wish the bot to respond to, in addition to anyone
+with a role named "Boss", "Higher Tier Arbitrator", "Lower Tier Arbitrator", or
+"Custom Track Arbitrator".
 4. Switch to the `local-setup` branch.
 5. Run `npm install` in this directory and then run `npm start`.
 6. Navigate to provided URL to authorize your Google account, bypassing
