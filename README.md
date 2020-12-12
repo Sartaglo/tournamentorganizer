@@ -89,7 +89,7 @@ rooms do not.
 - [x] The implementation of a simpler command prefix than mentioning.
 - [x] Configuration of the bot to respond to tournament organizers.
 - [ ] The ability to restore the state of the bot after it is restarted.
-- [ ] Restructuring of the bot to support running it headless on a server.
+- [x] Restructuring of the bot to support running it headless on a server.
 - [ ] Preventing a team from being advanced in a room they were not in.
 - [ ] The ability to register or unregister a team after initialization.
 - [ ] Keeping track of no-shows.
