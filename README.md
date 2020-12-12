@@ -53,8 +53,8 @@ into a final room.
 
 `round <roundNumber>`
 
-Switches the current round, mainly so that teams can be advanced into the next
-round.
+Switches the current round, mainly so that next round's rooms can be generated
+and teams can start being advanced from that round.
 
 ```
 advance <roomNumber>
@@ -62,8 +62,8 @@ advance <roomNumber>
 [...]
 ```
 
-Adds the given teams, each on its own line, to the current round, so that they
-will be part of the current round's next room generation.
+Adds the given teams, each on its own line, to next round, so that they will be
+part of next round's next room generation.
 
 ```
 unadvance <roomNumber>
@@ -71,8 +71,8 @@ unadvance <roomNumber>
 [...]
 ```
 
-Removes the given teams, each on its own line, from the current round, so that
-they will not be part of the current round's room generation.
+Removes the given teams, each on its own line, from next round, so that they
+will not be part of next round's next room generation.
 
 ## Roadmap
 

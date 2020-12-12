@@ -218,7 +218,7 @@ const sendUpdate = async (
         + ". Room "
         + roomNumber
         + " of round "
-        + (currentRoundNumber - 1)
+        + currentRoundNumber
         + " now has "
         + advancementsByRoom.get(roomNumber).length
         + "/"
@@ -243,24 +243,24 @@ const sendUpdate = async (
         + ".");
 }
 
-const advanceTeams = (currentRound, advancements, teams) => {
+const advanceTeams = (nextRound, advancements, teams) => {
     let hostTeams = [];
     let nonHostTeams = [];
     teams.forEach(
         (team) => {
             if (allHostTeams.indexOf(team) !== -1
-                && currentRound.hostTeams.indexOf(team) === -1) {
+                && nextRound.hostTeams.indexOf(team) === -1) {
                 hostTeams.push(team);
             } else if (allNonHostTeams.indexOf(team) !== -1
-                && currentRound.nonHostTeams.indexOf(team) === -1) {
+                && nextRound.nonHostTeams.indexOf(team) === -1) {
                 nonHostTeams.push(team);
             }
         },
     );
-    currentRound.hostTeams.push(...hostTeams);
-    currentRound.nonHostTeams.push(...nonHostTeams);
+    nextRound.hostTeams.push(...hostTeams);
+    nextRound.nonHostTeams.push(...nonHostTeams);
     advancements.push(...hostTeams, ...nonHostTeams);
-    saveRound(currentRoundNumber);
+    saveRound(currentRoundNumber + 1);
 
     return { hostTeams, nonHostTeams };
 };
@@ -269,21 +269,21 @@ const advance = async (channel, roomNumber, teams) => {
     const {
         advancementsByRoom,
         advancementCount,
-    } = rounds.get(currentRoundNumber - 1);
+    } = rounds.get(currentRoundNumber);
 
     if (!advancementsByRoom.has(roomNumber)) {
         return;
     }
 
-    const currentRound = rounds.get(currentRoundNumber);
+    const nextRound = rounds.get(currentRoundNumber + 1);
     const {
         hostTeams,
         nonHostTeams,
-    } = advanceTeams(currentRound, advancementsByRoom.get(roomNumber), teams);
+    } = advanceTeams(nextRound, advancementsByRoom.get(roomNumber), teams);
     await sendUpdate(
         channel,
         "Advanced",
-        currentRound,
+        nextRound,
         roomNumber,
         hostTeams,
         nonHostTeams,
@@ -292,24 +292,24 @@ const advance = async (channel, roomNumber, teams) => {
     );
 };
 
-const unadvanceTeams = (currentRound, advancements, teams) => {
+const unadvanceTeams = (nextRound, advancements, teams) => {
     let hostTeams = [];
     let nonHostTeams = [];
     teams.forEach(
         (team) => {
             if (allHostTeams.indexOf(team) !== -1
-                && currentRound.hostTeams.indexOf(team) !== -1) {
+                && nextRound.hostTeams.indexOf(team) !== -1) {
                 hostTeams.push(team);
             } else if (allNonHostTeams.indexOf(team) !== -1
-                && currentRound.nonHostTeams.indexOf(team) !== -1) {
+                && nextRound.nonHostTeams.indexOf(team) !== -1) {
                 nonHostTeams.push(team);
             }
         },
     );
     hostTeams.forEach(
         (team) => {
-            currentRound.hostTeams.splice(
-                currentRound.hostTeams.indexOf(team),
+            nextRound.hostTeams.splice(
+                nextRound.hostTeams.indexOf(team),
                 1,
             );
             advancements.splice(
@@ -320,8 +320,8 @@ const unadvanceTeams = (currentRound, advancements, teams) => {
     );
     nonHostTeams.forEach(
         (team) => {
-            currentRound.hostTeams.splice(
-                currentRound.hostTeams.indexOf(team),
+            nextRound.hostTeams.splice(
+                nextRound.hostTeams.indexOf(team),
                 1,
             );
             advancements.splice(
@@ -330,7 +330,7 @@ const unadvanceTeams = (currentRound, advancements, teams) => {
             );
         }
     );
-    saveRound(currentRoundNumber);
+    saveRound(currentRoundNumber + 1);
 
     return { hostTeams, nonHostTeams };
 };
@@ -339,29 +339,29 @@ const unadvance = async (channel, roomNumber, teams) => {
     const {
         advancementsByRoom,
         advancementCount,
-    } = rounds.get(currentRoundNumber - 1);
+    } = rounds.get(currentRoundNumber);
 
     if (!advancementsByRoom.has(roomNumber)) {
         await channel.send(
             "Room "
             + roomNumber
             + " of round "
-            + (currentRoundNumber - 1)
+            + currentRoundNumber
             + " has not been initialized.",
         );
 
         return;
     }
 
-    const currentRound = rounds.get(currentRoundNumber);
+    const nextRound = rounds.get(currentRoundNumber + 1);
     const {
         hostTeams,
         nonHostTeams,
-    } = unadvanceTeams(currentRound, advancementsByRoom.get(roomNumber), teams);
+    } = unadvanceTeams(nextRound, advancementsByRoom.get(roomNumber), teams);
     await sendUpdate(
         channel,
         "Unadvanced",
-        currentRound,
+        nextRound,
         roomNumber,
         hostTeams,
         nonHostTeams,
@@ -517,25 +517,21 @@ const makeRooms = async (channel) => {
 };
 
 const getRoomResults = async (channel, roomNumber) => {
-    if (!rounds.has(currentRoundNumber - 1)) {
+    if (!rounds.has(currentRoundNumber)) {
         await channel.send(
-            currentRoundNumber === 1
-                ? "You are on round 1. Switch to round 2."
-                : ("Round "
-                    + (currentRoundNumber - 1)
-                    + " has not been initialized."),
+            "Round " + currentRoundNumber + " has not been initialized.",
         );
 
         return;
     }
 
-    const { advancementsByRoom } = rounds.get(currentRoundNumber - 1);
+    const { advancementsByRoom } = rounds.get(currentRoundNumber);
 
     await channel.send(
         "Room "
         + roomNumber
         + " of round "
-        + (currentRoundNumber - 1)
+        + currentRoundNumber
         + " has "
         + (advancementsByRoom.has(roomNumber)
             && advancementsByRoom.get(roomNumber).length > 0
@@ -639,18 +635,6 @@ module.exports = {
                 return;
             }
 
-            if (!rounds.has(currentRoundNumber - 1)) {
-                await message.channel.send(
-                    currentRoundNumber === 1
-                        ? "You are on round 1. Switch to round 2."
-                        : ("Round "
-                            + (currentRoundNumber - 1)
-                            + " has not been initialized."),
-                );
-
-                return;
-            }
-
             if (!rounds.has(currentRoundNumber)) {
                 await message.channel.send(
                     "Round "
@@ -659,6 +643,18 @@ module.exports = {
                 );
 
                 return;
+            }
+
+            if (!rounds.has(currentRoundNumber + 1)) {
+                rounds.set(
+                    currentRoundNumber + 1,
+                    {
+                        hostTeams: [],
+                        nonHostTeams: [],
+                        advancementsByRoom: new Map(),
+                        advancementCount: null,
+                    },
+                );
             }
 
             if (command === "advance") {
