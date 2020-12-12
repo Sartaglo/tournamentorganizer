@@ -67,12 +67,12 @@ round, so that they will be part of next round's next room generation.
 
 ```
 unadvance <roomNumber>
-<registration>
+<team registration>
 [...]
 ```
 
-Removes the given teams, each on its own line, from next round, so that they
-will not be part of next round's next room generation.
+Removes the given teams, each on its own line, in the identified room from next
+round, so that they will not be part of next round's next room generation.
 
 ## Roadmap
 
