@@ -384,7 +384,7 @@ const getRoomParameters = async () => {
         (hostTeams.length + nonHostTeams.length) * currentTeamSize;
 
     if (playerCount <= 12) {
-        return { roomCount: 1, advancementCount: 6 };
+        return { roomCount: 1, advancementCount: currentTeamSize };
     }
 
     if (playerCount <= 24) {
