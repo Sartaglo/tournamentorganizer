@@ -27,13 +27,14 @@ navigating to the "Bot" tab in the left-hand sidebar.
 3. Update [this line](
 https://github.com/Sartaglo/tournamentorganizer/blob/541b5ae1b7a97f774146ed3340f0c794c04c020d/act-on-message.js#L551)
 in the code to whomever you wish the bot to respond to.
-3. Run `npm install` in this directory and then run `npm start`.
-4. Navigate to provided URL to authorize your Google account, bypassing
+4. Switch to the `local-setup` branch.
+5. Run `npm install` in this directory and then run `npm start`.
+6. Navigate to provided URL to authorize your Google account, bypassing
 the verification warning as explained [here](
 https://developers.google.com/docs/api/quickstart/nodejs#this_app_isnt_verified),
 and then enter the provided access code. This will create
 `googleapis-token.json` for repeated use.
-5. Add your bot to a server and permit it to send and receive messages in the
+7. Add your bot to a server and permit it to send and receive messages in the
 channels of your choosing.
 
 ## Commands
