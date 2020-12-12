@@ -16,7 +16,7 @@ let unitName = "team";
 
 let currentRoundNumber = 1;
 
-const rounds = new Map();
+let rounds = new Map();
 
 const saveRound = (roundNumber) => {
     if (!rounds.has(roundNumber)) {
@@ -157,6 +157,7 @@ const initialize = async (
                 contentIndex = nextIndex;
             }
 
+            rounds = new Map();
             rounds.set(
                 1,
                 {
