@@ -74,6 +74,10 @@ unadvance <roomNumber>
 Removes the given teams, each on its own line, in the identified room from next
 round, so that they will not be part of next round's next room generation.
 
+`results <roundNumber>`
+
+Displays the current advancements for the identified room in the current round.
+
 ## Roadmap
 
 - [ ] A `status` command to provide a summary of rooms in the current round,
