@@ -12,19 +12,19 @@ prerequisites and the steps to do so:
 - Google Docs API access; and
 - a Discord bot.
 
-1. Download `credential.json` as explained [here](
+1. Switch to the `local-setup` branch.
+2. Download `credential.json` as explained [here](
 https://developers.google.com/docs/api/quickstart/nodejs) and store it as
 `googleapis-credentials.json` in this directory.
-2. Create `discord-token.json` in this directory consisting of your Discord
+3. Create `discord-token.json` in this directory consisting of your Discord
 bot's token surrounded by double quotes. You can find the token by going [here](
 https://discord.com/developers/applications), selecting your bot, and then
 navigating to the "Bot" tab in the left-hand sidebar.
-3. Update [this line](
+4. Update [this line](
 https://github.com/Sartaglo/tournamentorganizer/blob/811e24ed2bbae468eac6e55177d14b799cf5ab5e/act-on-message.js#L7)
 in the code to whomever you wish the bot to respond to, in addition to anyone
 with a role named "Boss", "Higher Tier Arbitrator", "Lower Tier Arbitrator", or
 "Custom Track Arbitrator".
-4. Switch to the `local-setup` branch.
 5. Run `npm install` in this directory and then run `npm start`.
 6. Navigate to provided URL to authorize your Google account, bypassing
 the verification warning as explained [here](
