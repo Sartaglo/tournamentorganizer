@@ -509,13 +509,19 @@ const makeRooms = async (channel) => {
     const fileName = "round-" + currentRoundNumber + "-rooms.txt";
     fs.writeFileSync(fileName, roomTexts.join("\r\n\r\n"));
     const advancingTeamCount = advancementCount / currentTeamSize;
+    const pluralizer = advancingTeamCount === 1 ? "" : "s";
     await channel.send(
-        "Room generation complete. Advance the top "
-        + advancingTeamCount
-        + " "
-        + unitName
-        + (advancingTeamCount === 1 ? "" : "s")
-        + " in each room.",
+        "Room generation complete. "
+        + (advancingTeamCount === 1
+            ? ("The winning "
+                + unitName
+                + " of this room is the winner of the tournament.")
+            : ("Advance the top "
+                + advancingTeamCount
+                + " "
+                + unitName
+                + pluralizer
+                + " in each room.")),
         { files: [fileName] }
     );
 };
