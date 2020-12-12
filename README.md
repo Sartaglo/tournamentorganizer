@@ -20,7 +20,7 @@ bot's token surrounded by double quotes. You can find the token by going [here](
 https://discord.com/developers/applications), selecting your bot, and then
 navigating to the "Bot" tab in the left-hand sidebar.
 3. Update [this line](
-https://github.com/Sartaglo/tournamentorganizer/blob/b9f389fd8114e461aa2cc06f7e1e8427fcae95f6/act-on-message.js#L614)
+https://github.com/Sartaglo/tournamentorganizer/blob/811e24ed2bbae468eac6e55177d14b799cf5ab5e/act-on-message.js#L7)
 in the code to whomever you wish the bot to respond to, in addition to anyone
 with a role named "Boss", "Higher Tier Arbitrator", "Lower Tier Arbitrator", or
 "Custom Track Arbitrator".
