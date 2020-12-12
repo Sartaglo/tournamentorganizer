@@ -685,11 +685,6 @@ module.exports = {
                 return;
             }
 
-            oAuth2Client.setCredentials(
-                {
-                    access_token: process.env.access_token,
-                },
-            );
             const authorizationUrl = oAuth2Client.generateAuthUrl(
                 {
                     access_type: 'offline',
