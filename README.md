@@ -58,12 +58,12 @@ generated and teams can start being advanced from that round.
 
 ```
 advance <roomNumber>
-<registration>
+<team registration>
 [...]
 ```
 
-Adds the given teams, each on its own line, to next round, so that they will be
-part of next round's next room generation.
+Adds the given teams, each on its own line, in the identified room to next
+round, so that they will be part of next round's next room generation.
 
 ```
 unadvance <roomNumber>
