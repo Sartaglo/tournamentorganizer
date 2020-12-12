@@ -563,7 +563,7 @@ module.exports = {
             const hostCount = Number.parseInt(parameters[2], 10);
             const nonHostCount = Number.parseInt(parameters[3], 10);
 
-            if (typeof documentId !== 'string'
+            if (typeof documentId !== "string"
                 || documentId.length === 0
                 || ![1, 2, 3].includes(teamSize)
                 || !Number.isSafeInteger(hostCount)
@@ -617,7 +617,7 @@ module.exports = {
                 return;
             }
 
-            if (typeof parameters[0] !== 'string'
+            if (typeof parameters[0] !== "string"
                 || !Array.isArray(parameters[0].split("\n"))) {
                 await message.channel.send(usage);
 
