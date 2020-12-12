@@ -25,7 +25,7 @@ bot's token surrounded by double quotes. You can find the token by going [here](
 https://discord.com/developers/applications), selecting your bot, and then
 navigating to the "Bot" tab in the left-hand sidebar.
 3. Update [this line](
-https://github.com/Sartaglo/tournamentorganizer/blob/541b5ae1b7a97f774146ed3340f0c794c04c020d/act-on-message.js#L551)
+https://github.com/Sartaglo/tournamentorganizer/blob/b9f389fd8114e461aa2cc06f7e1e8427fcae95f6/act-on-message.js#L614)
 in the code to whomever you wish the bot to respond to.
 4. Switch to the `local-setup` branch.
 5. Run `npm install` in this directory and then run `npm start`.
