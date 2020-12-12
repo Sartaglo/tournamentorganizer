@@ -1,7 +1,8 @@
 # Tournament Organizer
 
-This is a Discord bot designed to ameliorate the process of running a Mario Kart
-Wii tournament in Mogi Lounge (https://discord.gg/HkbxJAM).
+This is a Discord bot (Tournament Organizer#7975) designed to ameliorate the
+process of running a Mario Kart Wii tournament in Mogi Lounge
+(https://discord.gg/HkbxJAM).
 
 ## Local Setup
 
