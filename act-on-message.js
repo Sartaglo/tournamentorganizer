@@ -4,8 +4,6 @@ const fs = require("fs");
 const { shuffle } = require("./shuffle");
 const { useDocs } = require("./use-docs");
 
-const botMention = "<@784938036478738463>";
-
 let allHostTeams = [];
 
 let allNonHostTeams = [];
@@ -611,14 +609,16 @@ module.exports = {
         }
 
         const segments = message.content.replace(/ +/g, " ").split(" ");
+        const prefix = ',';
 
-        if (segments.length < 2 || segments[0] !== botMention) {
+        if (segments.length < 1 || !segments[0].startsWith(prefix)) {
             return;
         }
 
-        const [_, command, ...parameters] = segments;
+        const [command, ...parameters] = segments;
+        const commandWithoutPrefix = command.substring(prefix.length);
 
-        if (command === "initialize") {
+        if (commandWithoutPrefix === "initialize") {
             const documentId = parameters[0];
             const teamSize = Number.parseInt(parameters[1], 10);
             const hostCount = Number.parseInt(parameters[2], 10);
@@ -644,7 +644,7 @@ module.exports = {
                 hostCount,
                 nonHostCount,
             );
-        } else if (command === "round") {
+        } else if (commandWithoutPrefix === "round") {
             const roundNumber = Number.parseInt(parameters[0], 10);
 
             if (!Number.isSafeInteger(roundNumber)) {
@@ -654,9 +654,9 @@ module.exports = {
             }
 
             await setRoundNumber(message.channel, roundNumber);
-        } else if (command === "rooms") {
+        } else if (commandWithoutPrefix === "rooms") {
             await makeRooms(message.channel);
-        } else if (command === "results") {
+        } else if (commandWithoutPrefix === "results") {
             const roomNumber = Number.parseInt(parameters[0], 10);
 
             if (!Number.isSafeInteger(roomNumber)) {
@@ -666,7 +666,7 @@ module.exports = {
             }
 
             await getRoomResults(message.channel, roomNumber);
-        } else if (command === "status") {
+        } else if (commandWithoutPrefix === "status") {
             await getRoundStatus(message.channel);
         } else {
             const usage = "Usage: [un]advance <roomNumber>\n"
@@ -720,9 +720,9 @@ module.exports = {
                 );
             }
 
-            if (command === "advance") {
+            if (commandWithoutPrefix === "advance") {
                 await advance(message.channel, roomNumber, lines.slice(1));
-            } else if (command === "unadvance") {
+            } else if (commandWithoutPrefix === "unadvance") {
                 await unadvance(message.channel, roomNumber, lines.slice(1));
             }
         }

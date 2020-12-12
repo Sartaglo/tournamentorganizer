@@ -41,23 +41,23 @@ channels of your choosing.
 Commands are executed by mentioning the bot and then providing the command and
 any parameters as needed.
 
-`initialize <documentId> <teamSize> <hostCount> <nonHostCount>`
+`,initialize <documentId> <teamSize> <hostCount> <nonHostCount>`
 
 Loads registrations from the identified Google Doc according to the parameters.
 
-`rooms`
+`,rooms`
 
 Randomly generates rooms for the current round, choosing the best number of
 rounds corresponding to the number of players and team size that divides evenly
 into a final room.
 
-`round <roundNumber>`
+`,round <roundNumber>`
 
 Switches to the identified round, mainly so that next round's rooms can be
 generated and teams can start being advanced from that round.
 
 ```
-advance <roomNumber>
+,advance <roomNumber>
 <team registration>
 [...]
 ```
@@ -66,7 +66,7 @@ Adds the given teams, each on its own line, in the identified room to next
 round, so that they will be part of next round's next room generation.
 
 ```
-unadvance <roomNumber>
+,unadvance <roomNumber>
 <team registration>
 [...]
 ```
@@ -74,11 +74,11 @@ unadvance <roomNumber>
 Removes the given teams, each on its own line, in the identified room from next
 round, so that they will not be part of next round's next room generation.
 
-`results <roundNumber>`
+`,results <roundNumber>`
 
 Displays the current advancements for the identified room in the current round.
 
-`status`
+`,status`
 
 Displays how many rooms are done in the current round and lists the rooms that
 aren't done.
@@ -88,7 +88,7 @@ aren't done.
 - [x] A `status` command to provide a summary of rooms in the current round,
 specifically how many rooms have the expected number of advancements and which
 rooms do not.
-- [ ] The implementation of a simpler command prefix than mentioning.
+- [x] The implementation of a simpler command prefix than mentioning.
 - [ ] Configuration of the bot to respond to tournament organizers.
 - [ ] The ability to restore the state of the bot after it is restarted.
 - [ ] Restructuring of the bot to support running it headless on a server.
