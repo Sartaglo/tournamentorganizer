@@ -7,17 +7,17 @@ const { shuffle } = require("./shuffle");
 const adminId = "484822486861611011";
 
 const oAuth2Client = new google.auth.OAuth2(
-    process.env.google_client_id,
-    process.env.google_client_secret,
-    process.env.google_redirect_uri,
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    process.env.GOOGLE_REDIRECT_URI,
 );
 oAuth2Client.setCredentials(
     {
-        access_token: process.env.google_access_token,
-        refresh_token: process.env.google_refresh_token,
-        scope: process.env.google_scope,
-        token_type: process.env.google_token_type,
-        expiry_date: process.env.google_expiry_date,
+        access_token: process.env.GOOGLE_ACCESS_TOKEN,
+        refresh_token: process.env.GOOGLE_REFRESH_TOKEN,
+        scope: process.env.GOOGLE_SCOPE,
+        token_type: process.env.GOOGLE_TOKEN_TYPE,
+        expiry_date: process.env.GOOGLE_EXPIRY_DATE,
     },
 );
 
