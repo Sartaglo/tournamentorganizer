@@ -91,4 +91,5 @@ rooms do not.
 - [x] Restructuring of the bot to support running it headless on a server.
 - [ ] Preventing a team from being advanced in a room they were not in.
 - [ ] The ability to register or unregister a team after initialization.
-- [ ] Keeping track of no-shows.
+- [ ] Keeping track of banned players.
+- [ ] Preventing registration of banned players.
