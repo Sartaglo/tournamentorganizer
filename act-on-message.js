@@ -320,8 +320,8 @@ const unadvanceTeams = (nextRound, advancements, teams) => {
     );
     nonHostTeams.forEach(
         (team) => {
-            nextRound.hostTeams.splice(
-                nextRound.hostTeams.indexOf(team),
+            nextRound.nonHostTeams.splice(
+                nextRound.nonHostTeams.indexOf(team),
                 1,
             );
             advancements.splice(
