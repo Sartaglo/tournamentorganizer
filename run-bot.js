@@ -19,14 +19,14 @@ module.exports = {
                     return;
                 }
 
-                await actOnMessage(client, message);
+                await actOnMessage(message);
             },
         );
 
         try {
             await client.login(process.env.DISCORD_TOKEN);
         } catch (error) {
-            console.error(error);
+            console.error(error.stack);
             client.destroy();
         }
     },

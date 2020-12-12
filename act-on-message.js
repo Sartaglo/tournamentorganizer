@@ -1,8 +1,25 @@
 "use strict";
 
 const fs = require("fs");
+const { google } = require("googleapis");
 const { shuffle } = require("./shuffle");
-const { useDocs } = require("./use-docs");
+
+const adminId = "484822486861611011";
+
+const oAuth2Client = new google.auth.OAuth2(
+    process.env.google_client_id,
+    process.env.google_client_secret,
+    process.env.google_redirect_uri,
+);
+oAuth2Client.setCredentials(
+    {
+        access_token: process.env.google_access_token,
+        refresh_token: process.env.google_refresh_token,
+        scope: process.env.google_scope,
+        token_type: process.env.google_token_type,
+        expiry_date: process.env.google_expiry_date,
+    },
+);
 
 let allHostTeams = [];
 
@@ -30,16 +47,6 @@ const saveRound = (roundNumber) => {
         "round-" + roundNumber + "-non-hosts.txt",
         nonHostTeams.join("\r\n"),
     );
-}
-
-const tryUseDocs = async () => {
-    try {
-        return await useDocs();
-    } catch (error) {
-        console.error("Error using Docs:", error);
-
-        return null;
-    }
 }
 
 const parseRegistration = (content, startIndex) => {
@@ -106,17 +113,23 @@ const initialize = async (
     hostCount,
     nonHostCount,
 ) => {
-    const docs = await tryUseDocs();
-
-    if (docs === null) {
-        return;
-    }
-
-    docs.documents.get(
+    google.docs({ version: 'v1', auth: oAuth2Client }).documents.get(
         { documentId },
         async (error, response) => {
             if (error) {
-                console.error("The API returned an error:", error);
+                console.error("Error using Google Docs:", error.stack);
+                await channel.send(
+                    "An error was encountered with Google Docs. The error has"
+                    + " been reported to <@"
+                    + adminId
+                    + ">.",
+                );
+                const admin = await channel.client.users.fetch(
+                    adminId,
+                    false,
+                    true,
+                );
+                await admin.send(error.stack);
 
                 return;
             }
@@ -603,8 +616,13 @@ const getRoundStatus = async (channel) => {
 }
 
 module.exports = {
-    actOnMessage: async (client, message) => {
-        const authorisAdmin = message.author.id === "484822486861611011";
+    actOnMessage: async (message) => {
+        const authorisAdmin = message.author.id === adminId;
+
+        if (!message.guild && !authorisAdmin) {
+            return;
+        }
+
         const roles = [
             "Boss",
             "Higher Tier Arbitrator",
@@ -626,8 +644,63 @@ module.exports = {
 
         const [command, ...parameters] = segments;
         const commandWithoutPrefix = command.substring(prefix.length);
+        const admin = await message.client.users.fetch(
+            adminId,
+            false,
+            true,
+        );
 
-        if (commandWithoutPrefix === "initialize") {
+        if (commandWithoutPrefix === "authorize") {
+            if (!authorisAdmin) {
+                return;
+            }
+
+            oAuth2Client.setCredentials(
+                {
+                    access_token: process.env.access_token,
+                },
+            );
+            const authorizationUrl = oAuth2Client.generateAuthUrl(
+                {
+                    access_type: 'offline',
+                    scope: [
+                        "https://www.googleapis.com/auth/documents.readonly",
+                    ],
+                }
+            );
+            await admin.send(authorizationUrl);
+
+            if (message.guild) {
+                await message.channel.send("Sent authorization URL.");
+            }
+        } else if (commandWithoutPrefix === "authenticate") {
+            if (message.guild || !authorisAdmin) {
+                return;
+            }
+
+            const code = parameters[0];
+
+            if (typeof code !== 'string' || code.length === 0) {
+                await admin.send("Usage: authenticate <accessCode>");
+
+                return;
+            }
+
+            try {
+                const { tokens } = await oAuth2Client.getToken(code);
+                oAuth2Client.setCredentials(tokens);
+                await admin.send("```JSON\n"
+                    + JSON.stringify(tokens, null, 2)
+                    + "\n```");
+            } catch (error) {
+                console.error("Error authenticating:", error.stack);
+                await admin.send(error.stack);
+            }
+        } else if (commandWithoutPrefix === "initialize") {
+            if (!message.guild) {
+                return;
+            }
+
             const documentId = parameters[0];
             const teamSize = Number.parseInt(parameters[1], 10);
             const hostCount = Number.parseInt(parameters[2], 10);
@@ -654,6 +727,10 @@ module.exports = {
                 nonHostCount,
             );
         } else if (commandWithoutPrefix === "round") {
+            if (!message.guild) {
+                return;
+            }
+
             const roundNumber = Number.parseInt(parameters[0], 10);
 
             if (!Number.isSafeInteger(roundNumber)) {
@@ -664,8 +741,16 @@ module.exports = {
 
             await setRoundNumber(message.channel, roundNumber);
         } else if (commandWithoutPrefix === "rooms") {
+            if (!message.guild) {
+                return;
+            }
+
             await makeRooms(message.channel);
         } else if (commandWithoutPrefix === "results") {
+            if (!message.guild) {
+                return;
+            }
+
             const roomNumber = Number.parseInt(parameters[0], 10);
 
             if (!Number.isSafeInteger(roomNumber)) {
@@ -676,17 +761,26 @@ module.exports = {
 
             await getRoomResults(message.channel, roomNumber);
         } else if (commandWithoutPrefix === "status") {
+            if (!message.guild) {
+                return;
+            }
+
             await getRoundStatus(message.channel);
         } else if (commandWithoutPrefix === "stop") {
+
             if (!authorisAdmin) {
                 return;
             }
 
             await message.channel.send("Goodbye.");
-            client.destroy();
+            message.client.destroy();
         } else {
+            if (!message.guild) {
+                return;
+            }
+
             const usage = "Usage: [un]advance <roomNumber>\n"
-                + "<registration 1>\n"
+                + "<team registration>\n"
                 + "[...]";
             const lines = message.content.split("\n");
 
