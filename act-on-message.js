@@ -553,6 +553,57 @@ const getRoomResults = async (channel, roomNumber) => {
     );
 };
 
+const getRoundStatus = async (channel) => {
+    if (!rounds.has(currentRoundNumber)) {
+        await channel.send(
+            "Round " + currentRoundNumber + " has not been initialized.",
+        );
+
+        return;
+    }
+
+    const {
+        advancementsByRoom,
+        advancementCount,
+    } = rounds.get(currentRoundNumber);
+    const notDoneRoomNumbers = Array.from(advancementsByRoom)
+        .filter(
+            ([_, advancements]) =>
+                advancements.length !== advancementCount / currentTeamSize,
+        )
+        .map(([roomNumber]) => roomNumber);
+
+    const countIndicator = (notDoneRoomNumbers.length === 1 ? " is" : "s are");
+    await channel.send(
+        "Round "
+        + currentRoundNumber
+        + " has "
+        + (advancementsByRoom.size - notDoneRoomNumbers.length)
+        + " out of "
+        + advancementsByRoom.size
+        + " rooms done."
+        + (notDoneRoomNumbers.length === 0
+            ? ""
+            : (" The following room"
+                + countIndicator
+                + " not done: "
+                + notDoneRoomNumbers.reduce(
+                    (accumulator, roomNumber, index, self) => {
+                        if (self.length === 2) {
+                            return accumulator + " and " + roomNumber;
+                        }
+
+                        if (index < self.length - 1) {
+                            return accumulator + ", " + roomNumber;
+                        }
+
+                        return accumulator + ", and " + roomNumber;
+                    },
+                )
+                + "."))
+    );
+}
+
 module.exports = {
     actOnMessage: async (message) => {
         if (message.author.id !== "484822486861611011") {
@@ -615,6 +666,8 @@ module.exports = {
             }
 
             await getRoomResults(message.channel, roomNumber);
+        } else if (command === "status") {
+            await getRoundStatus(message.channel);
         } else {
             const usage = "Usage: [un]advance <roomNumber>\n"
                 + "<registration 1>\n"

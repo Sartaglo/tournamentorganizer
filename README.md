@@ -78,9 +78,14 @@ round, so that they will not be part of next round's next room generation.
 
 Displays the current advancements for the identified room in the current round.
 
+`status`
+
+Displays how many rooms are done in the current round and lists the rooms that
+aren't done.
+
 ## Roadmap
 
-- [ ] A `status` command to provide a summary of rooms in the current round,
+- [x] A `status` command to provide a summary of rooms in the current round,
 specifically how many rooms have the expected number of advancements and which
 rooms do not.
 - [ ] The implementation of a simpler command prefix than mentioning.
