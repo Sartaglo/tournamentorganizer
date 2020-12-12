@@ -650,7 +650,37 @@ module.exports = {
             true,
         );
 
-        if (commandWithoutPrefix === "authorize") {
+        if (commandWithoutPrefix === "read") {
+            if (!authorisAdmin) {
+                return;
+            }
+
+            const usage = "Usage: read <fileName> [...]";
+
+            if (parameters.some(
+                (parameter) => typeof parameter !== "string"
+                    || parameter.length === 0,
+            )) {
+                if (message.guild) {
+                    await message.channel.send(usage);
+                } else {
+                    await admin.send(usage);
+                }
+
+                return;
+            }
+
+            try {
+                if (message.guild) {
+                    await message.channel.send(null, { files: parameters });
+                } else {
+                    await admin.send(null, { files: parameters });
+                }
+            } catch (error) {
+                console.error(error.stack);
+                await admin.send(error.stack);
+            }
+        } else if (commandWithoutPrefix === "authorize") {
             if (!authorisAdmin) {
                 return;
             }
