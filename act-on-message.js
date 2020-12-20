@@ -810,9 +810,15 @@ module.exports = {
             const usage = "Usage: [un]advance <roomNumber>\n"
                 + "<registration>\n"
                 + "[...]";
-            const lines = message.content.split("\n");
+            const registrations = message.content
+                .split("\n")
+                .slice(1)
+                .filter(
+                    (registration, index, self) =>
+                        self.indexOf(registration) === index,
+                );
 
-            if (lines.length < 1) {
+            if (registrations.length < 1) {
                 await message.channel.send(usage);
 
                 return;
@@ -854,14 +860,15 @@ module.exports = {
                         nonHostTeams: [],
                         advancementsByRoom: new Map(),
                         advancementCount: null,
+                        rooms: [],
                     },
                 );
             }
 
             if (commandWithoutPrefix === "advance") {
-                await advance(message.channel, roomNumber, lines.slice(1));
+                await advance(message.channel, roomNumber, registrations);
             } else if (commandWithoutPrefix === "unadvance") {
-                await unadvance(message.channel, roomNumber, lines.slice(1));
+                await unadvance(message.channel, roomNumber, registrations);
             }
         }
     },
