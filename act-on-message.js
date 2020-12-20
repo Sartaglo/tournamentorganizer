@@ -805,7 +805,7 @@ module.exports = {
             }
 
             const usage = "Usage: [un]advance <roomNumber>\n"
-                + "<team registration>\n"
+                + "<registration>\n"
                 + "[...]";
             const lines = message.content.split("\n");
 

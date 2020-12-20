@@ -57,7 +57,7 @@ generated and teams can start being advanced from that round.
 
 ```
 ,advance <roomNumber>
-<team registration>
+<registration>
 [...]
 ```
 
@@ -66,7 +66,7 @@ round, so that they will be part of next round's next room generation.
 
 ```
 ,unadvance <roomNumber>
-<team registration>
+<registration>
 [...]
 ```
 
