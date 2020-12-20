@@ -115,7 +115,7 @@ const initialize = async (
     hostCount,
     nonHostCount,
 ) => {
-    google.docs({ version: 'v1', auth: oAuth2Client }).documents.get(
+    google.docs({ version: "v1", auth: oAuth2Client }).documents.get(
         { documentId },
         async (error, response) => {
             if (error) {
@@ -638,7 +638,7 @@ module.exports = {
         }
 
         const segments = message.content.replace(/ +/g, " ").split(" ");
-        const prefix = ',';
+        const prefix = ",";
 
         if (segments.length < 1 || !segments[0].startsWith(prefix)) {
             return;
@@ -689,7 +689,7 @@ module.exports = {
 
             const authorizationUrl = oAuth2Client.generateAuthUrl(
                 {
-                    access_type: 'offline',
+                    access_type: "offline",
                     scope: [
                         "https://www.googleapis.com/auth/documents.readonly",
                     ],
@@ -707,7 +707,7 @@ module.exports = {
 
             const code = parameters[0];
 
-            if (typeof code !== 'string' || code.length === 0) {
+            if (typeof code !== "string" || code.length === 0) {
                 await admin.send("Usage: authenticate <accessCode>");
 
                 return;
