@@ -88,7 +88,9 @@ const parseRegistration = (content, startIndex) => {
     }
 
     return {
-        registration: registration.trim().replace(/\s+/g, " "),
+        registration: registration === null
+            ? null
+            : registration.trim().replace(/\s+/g, " "),
         nextIndex: contentIndex,
     };
 };
