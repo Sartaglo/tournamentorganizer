@@ -255,8 +255,8 @@ const sendUpdate = async (
 }
 
 const advanceTeams = (nextRound, advancements, teams) => {
-    let hostTeams = [];
-    let nonHostTeams = [];
+    const hostTeams = [];
+    const nonHostTeams = [];
     teams.forEach(
         (team) => {
             if (allHostTeams.indexOf(team) !== -1
@@ -304,8 +304,8 @@ const advance = async (channel, roomNumber, teams) => {
 };
 
 const unadvanceTeams = (nextRound, advancements, teams) => {
-    let hostTeams = [];
-    let nonHostTeams = [];
+    const hostTeams = [];
+    const nonHostTeams = [];
     teams.forEach(
         (team) => {
             if (allHostTeams.indexOf(team) !== -1
