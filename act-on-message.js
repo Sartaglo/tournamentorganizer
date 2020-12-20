@@ -208,17 +208,16 @@ const setRoundNumber = async (channel, roundNumber) => {
 const sendUpdate = async (
     channel,
     action,
-    currentRound,
+    nextRound,
     roomNumber,
     hostTeams,
     nonHostTeams,
     advancementsByRoom,
     advancementCount,
 ) => {
-    const teamCount = currentRound.hostTeams.length
-        + currentRound.nonHostTeams.length;
-    await channel.send(
-        action
+    const teamCount = nextRound.hostTeams.length
+        + nextRound.nonHostTeams.length;
+    const baseContent = action
         + " "
         + hostTeams.length
         + " host "
@@ -238,16 +237,19 @@ const sendUpdate = async (
         + (advancementCount / currentTeamSize)
         + " advanced "
         + unitName
-        + ". There are now "
-        + currentRound.hostTeams.length
+        + (advancementCount === 1 ? "" : "s")
+        + ". Round "
+        + (currentRoundNumber + 1)
+        + " now has "
+        + nextRound.hostTeams.length
         + " host "
         + unitName
-        + (currentRound.hostTeams.length === 1 ? "" : "s")
+        + (nextRound.hostTeams.length === 1 ? "" : "s")
         + " and "
-        + currentRound.nonHostTeams.length
+        + nextRound.nonHostTeams.length
         + " non-host "
         + unitName
-        + (currentRound.nonHostTeams.length === 1 ? "" : "s")
+        + (nextRound.nonHostTeams.length === 1 ? "" : "s")
         + " for a total of "
         + teamCount
         + " "
