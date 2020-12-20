@@ -659,7 +659,7 @@ module.exports = {
                 return;
             }
 
-            const usage = "Usage: read <fileName> [...]";
+            const usage = "Usage: ,read <fileName> [...]";
 
             if (parameters.some(
                 (parameter) => typeof parameter !== "string"
@@ -710,7 +710,7 @@ module.exports = {
             const code = parameters[0];
 
             if (typeof code !== "string" || code.length === 0) {
-                await admin.send("Usage: authenticate <accessCode>");
+                await admin.send("Usage: ,authenticate <accessCode>");
 
                 return;
             }
@@ -741,7 +741,7 @@ module.exports = {
                 || !Number.isSafeInteger(hostCount)
                 || !Number.isSafeInteger(nonHostCount)) {
                 await message.channel.send(
-                    "Usage: initialize"
+                    "Usage: ,initialize"
                     + " <documentId> <teamSize> <hostCount> <nonHostCount>",
                 );
 
@@ -763,7 +763,7 @@ module.exports = {
             const roundNumber = Number.parseInt(parameters[0], 10);
 
             if (!Number.isSafeInteger(roundNumber)) {
-                await message.channel.send("Usage: round <roundNumber>");
+                await message.channel.send("Usage: ,round <roundNumber>");
 
                 return;
             }
@@ -781,7 +781,7 @@ module.exports = {
                 return;
             }
 
-            const usage = "Usage: [un]advance <roomNumber>\n"
+            const usage = "Usage: ,[un]advance <roomNumber>\n"
                 + "<registration>\n"
                 + "[...]";
             const registrations = message.content
@@ -852,7 +852,7 @@ module.exports = {
             const roomNumber = Number.parseInt(parameters[0], 10);
 
             if (!Number.isSafeInteger(roomNumber)) {
-                await message.channel.send("Usage: results <roomNumber>");
+                await message.channel.send("Usage: ,results <roomNumber>");
 
                 return;
             }
