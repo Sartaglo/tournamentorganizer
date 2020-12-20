@@ -801,7 +801,8 @@ module.exports = {
 
             await message.channel.send("Goodbye.");
             message.client.destroy();
-        } else {
+        } else if (commandWithoutPrefix === "advance"
+            || commandWithoutPrefix === "unadvance") {
             if (!message.guild) {
                 return;
             }
