@@ -775,34 +775,6 @@ module.exports = {
             }
 
             await makeRooms(message.channel);
-        } else if (commandWithoutPrefix === "results") {
-            if (!message.guild) {
-                return;
-            }
-
-            const roomNumber = Number.parseInt(parameters[0], 10);
-
-            if (!Number.isSafeInteger(roomNumber)) {
-                await message.channel.send("Usage: results <roomNumber>");
-
-                return;
-            }
-
-            await getRoomResults(message.channel, roomNumber);
-        } else if (commandWithoutPrefix === "status") {
-            if (!message.guild) {
-                return;
-            }
-
-            await getRoundStatus(message.channel);
-        } else if (commandWithoutPrefix === "stop") {
-
-            if (!authorisAdmin) {
-                return;
-            }
-
-            await message.channel.send("Goodbye.");
-            message.client.destroy();
         } else if (commandWithoutPrefix === "advance"
             || commandWithoutPrefix === "unadvance") {
             if (!message.guild) {
@@ -872,6 +844,34 @@ module.exports = {
             } else if (commandWithoutPrefix === "unadvance") {
                 await unadvance(message.channel, roomNumber, registrations);
             }
+        } else if (commandWithoutPrefix === "results") {
+            if (!message.guild) {
+                return;
+            }
+
+            const roomNumber = Number.parseInt(parameters[0], 10);
+
+            if (!Number.isSafeInteger(roomNumber)) {
+                await message.channel.send("Usage: results <roomNumber>");
+
+                return;
+            }
+
+            await getRoomResults(message.channel, roomNumber);
+        } else if (commandWithoutPrefix === "status") {
+            if (!message.guild) {
+                return;
+            }
+
+            await getRoundStatus(message.channel);
+        } else if (commandWithoutPrefix === "stop") {
+
+            if (!authorisAdmin) {
+                return;
+            }
+
+            await message.channel.send("Goodbye.");
+            message.client.destroy();
         }
     },
 };
