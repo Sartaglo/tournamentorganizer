@@ -345,6 +345,68 @@ const initialize = async (
     );
 };
 
+const registerHost = async (channel, registration) => {
+    if (allHostTeams.includes(registration)) {
+        await channel.send("That is already a host registration.");
+    }
+
+    if (allNonHostTeams.includes(registration)) {
+        await channel.send("That is already a non-host registration.");
+    }
+
+    allHostTeams.push(registration);
+    await channel.send(
+        "`" + registration + "` is now registered as a host " + unitName + ".",
+    );
+};
+
+const registerNonHost = async (channel, registration) => {
+    if (allHostTeams.includes(registration)) {
+        await channel.send("That is already a host registration.");
+    }
+
+    if (allNonHostTeams.includes(registration)) {
+        await channel.send("That is already a non-host registration.");
+    }
+
+    allNonHostTeams.push(registration);
+    await channel.send(
+        "`"
+        + registration
+        + "` is now registered as a non-host "
+        + unitName
+        + ".",
+    );
+};
+
+const unregister = async (channel, registration) => {
+    const hostIndex = allHostTeams.findIndex(
+        (hostTeam) => hostTeam === registration,
+    );
+
+    if (hostIndex !== -1) {
+        allHostTeams.splice(hostIndex, 1);
+        await channel.send(
+            "`" + registration + "` is no longer a host registration.",
+        );
+    }
+
+    const nonHostIndex = allNonHostTeams.findIndex(
+        (nonHostTeam) => nonHostTeam === registration,
+    );
+
+    if (nonHostIndex !== -1) {
+        allNonHostTeams.splice(nonHostIndex, 1);
+        await channel.send(
+            "`" + registration + "` is no longer a non-host registration.",
+        );
+    }
+
+    if (hostIndex === -1 && nonHostIndex === -1) {
+        await channel.send("`" + registration + "` is not registered.");
+    }
+};
+
 const setRoundNumber = async (channel, roundNumber) => {
     if (!rounds.has(roundNumber)) {
         rounds.set(
@@ -1108,6 +1170,56 @@ module.exports = {
                 nonHostCount,
                 blacklist,
             );
+        } else if (commandWithoutPrefix === "register") {
+            if (!message.guild) {
+                return;
+            }
+
+            const usage = "**Usage:** register host|nonhost <registration>";
+            const type = parameters[0];
+
+            if (type !== "host" && type !== "nonhost") {
+                await message.channel.send(usage);
+
+                return;
+            }
+
+            const registration = parameters
+                .slice(1)
+                .join(" ")
+                .trim()
+                .replace(/\s+/g, " ");
+
+            if (registration.length === 0) {
+                await message.channel.send(usage);
+
+                return;
+            }
+
+            if (type == "host") {
+                await registerHost(message.channel, registration);
+            } else {
+                await registerNonHost(message.channel, registration);
+            }
+        } else if (commandWithoutPrefix === "unregister") {
+            if (!message.guild) {
+                return;
+            }
+
+            const registration = parameters
+                .join(" ")
+                .trim()
+                .replace(/\s+/g, " ");
+
+            if (registration.length === 0) {
+                await message.channel.send(
+                    "**Usage:** unregister <registration>",
+                );
+
+                return;
+            }
+
+            await unregister(message.channel, registration);
         } else if (commandWithoutPrefix === "round") {
             if (!message.guild) {
                 return;

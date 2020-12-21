@@ -103,4 +103,4 @@ rooms do not.
 - [x] Prevent a team from being advanced more than once in the same round.
 - [x] Warn about the registration of banned players.
 - [x] Keeping track of banned players.
-- [ ] The ability to register or unregister a team after initialization.
+- [x] The ability to register or unregister a team after initialization.
