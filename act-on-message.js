@@ -567,19 +567,7 @@ const unadvanceTeams = (roomNumber, teams) => {
     const messages = [];
     teams.forEach(
         (team) => {
-            const inAllHostTeams = allHostTeams.indexOf(team) !== -1;
-            const inNextHostTeams = nextRound.hostTeams.indexOf(team) !== -1;
-            const inAllNonHostTeams = allNonHostTeams.indexOf(team) !== -1;
-            const inNextNonHostTeams =
-                nextRound.nonHostTeams.indexOf(team) !== -1;
-
-            if (!inAllHostTeams && !inAllNonHostTeams) {
-                messages.push(
-                    "**Error:** `"
-                    + team
-                    + "` is not registered in the tournament.",
-                );
-            } else if (!advancements.includes(team)) {
+            if (!advancements.includes(team)) {
                 messages.push(
                     "**Error**: `"
                     + team
@@ -589,30 +577,18 @@ const unadvanceTeams = (roomNumber, teams) => {
                     + (currentRoundNumber + 1)
                     + "."
                 );
-            } else if (inAllHostTeams) {
-                if (inNextHostTeams) {
-                    hostTeams.push(team);
-                } else {
-                    messages.push(
-                        "**Error:** `"
-                        + team
-                        + "` has not been advanced to round "
-                        + (currentRoundNumber + 1)
-                        + ".",
-                    );
-                }
-            } else if (inAllNonHostTeams) {
-                if (inNextNonHostTeams) {
-                    nonHostTeams.push(team);
-                } else {
-                    messages.push(
-                        "**Error:** `"
-                        + team
-                        + "` has not been advanced to round "
-                        + (currentRoundNumber + 1)
-                        + ".",
-                    );
-                }
+            } else if (nextRound.hostTeams.indexOf(team) !== -1) {
+                hostTeams.push(team);
+            } else if (nextRound.nonHostTeams.indexOf(team) !== -1) {
+                nonHostTeams.push(team);
+            } else {
+                messages.push(
+                    "**Error:** `"
+                    + team
+                    + "` has not been advanced to round "
+                    + (currentRoundNumber + 1)
+                    + ".",
+                );
             }
         },
     );
