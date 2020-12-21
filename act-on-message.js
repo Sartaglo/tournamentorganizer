@@ -909,7 +909,10 @@ const getRoundStatus = async (channel) => {
                         return accumulator + ", and " + roomNumber;
                     },
                 )
-                + "."))
+                + "."
+            )
+        ),
+        { files: ["round-" + currentRoundNumber + "-rooms.txt"] },
     );
 }
 
