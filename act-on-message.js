@@ -33,6 +33,8 @@ let currentRoundNumber = 1;
 
 let rounds = new Map();
 
+let blacklist = [];
+
 const saveRound = (roundNumber) => {
     if (!rounds.has(roundNumber)) {
         return;
@@ -911,6 +913,55 @@ const getRoundStatus = async (channel) => {
     );
 }
 
+const sendBlacklistMessage = async (channel) => {
+    await channel.send(
+        blacklist.length === 0
+            ? "No players are banned for the next tournament."
+            : ("The following "
+                + blacklist.length
+                + " player"
+                + (blacklist.length === 1 ? " is" : "s are")
+                + " banned from the next tournament: "
+                + blacklist.join(", ")),
+    );
+}
+
+const addToBlacklist = async (channel, names) => {
+    names.forEach(
+        (name) => {
+            if (blacklist.includes(name)) {
+                return;
+            }
+
+            blacklist.push(name);
+        },
+    );
+    await sendBlacklistMessage(channel);
+};
+
+const removeFromBlacklist = async (channel, names) => {
+    names.forEach(
+        (name) => {
+            const index = blacklist.findIndex(
+                (item) => item.toLowerCase().replace(/\s+/g, "")
+                    === name.toLowerCase().replace(/\s+/g, ""),
+            );
+
+            if (index === -1) {
+                return;
+            }
+
+            blacklist.splice(index, 1);
+        },
+    );
+    await sendBlacklistMessage(channel);
+};
+
+const clearBlacklist = async (channel) => {
+    blacklist = [];
+    await sendBlacklistMessage(channel);
+}
+
 module.exports = {
     actOnMessage: async (message) => {
         const authorisAdmin = message.author.id === adminId;
@@ -1163,6 +1214,37 @@ module.exports = {
             }
 
             await getRoundStatus(message.channel);
+        } else if (commandWithoutPrefix === "blacklist") {
+            const usage =
+                "**Usage:** ,blacklist [add|remove <blacklistedPlayer>,[...]]";
+            const subCommand = parameters[0];
+
+            if (subCommand === "add" || subCommand === "remove") {
+                const names = parameters
+                    .slice(1)
+                    .join(" ")
+                    .split(",")
+                    .map((item) => item.trim());
+
+                if (names.length === 0) {
+                    await message.channel.send(usage);
+                } else if (names.some(
+                    (name) => !(/^[A-Za-z0-9 ]{2,15}$/).test(name),
+                )) {
+                    await message.channel.send(
+                        "A player's name consists of 2-15 alphanumeric or space"
+                        + " characters.",
+                    );
+                } else if (subCommand === "add") {
+                    await addToBlacklist(message.channel, names);
+                } else {
+                    await removeFromBlacklist(message.channel, names);
+                }
+            } else if (parameters.length === 0) {
+                await sendBlacklistMessage(message.channel);
+            } else {
+                await message.channel.send(usage);
+            }
         } else if (commandWithoutPrefix === "stop") {
 
             if (!authorisAdmin) {
