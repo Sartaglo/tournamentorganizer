@@ -1091,7 +1091,7 @@ module.exports = {
                 await message.channel.send(
                     "**Usage:** ,initialize"
                     + " <documentId> <teamSize> <hostCount> <nonHostCount>"
-                    + " [blacklistedPlayer],[...]",
+                    + " [blacklistedPlayer,...]",
                 );
 
                 return;
