@@ -858,6 +858,15 @@ const getRoundStatus = async (channel) => {
         advancementsByRoom,
         advancementCount,
     } = rounds.get(currentRoundNumber);
+
+    if (advancementsByRoom.size === 0 || advancementCount === null) {
+        await channel.send(
+            "Rooms have not been made for round " + currentRoundNumber + ".",
+        );
+
+        return;
+    }
+
     const advancingTeamCount = advancementCount / currentTeamSize;
     const notDoneRoomNumbers = Array.from(advancementsByRoom)
         .filter(
