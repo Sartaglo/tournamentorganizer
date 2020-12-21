@@ -464,7 +464,14 @@ const advanceTeams = (roomNumber, teams) => {
                     );
                 }
             } else {
-                messages.push("**Warning:** `" + team + "` was not in a room.");
+                messages.push(
+                    "**Warning:** `"
+                    + team
+                    + "` was not in a room of round "
+                    + currentRoundNumber
+                    + ". This is to be expected with substitutes and manual"
+                    + " registrations.",
+                );
             }
 
             if (!inAllHostTeams && !inAllNonHostTeams) {
