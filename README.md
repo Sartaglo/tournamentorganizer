@@ -4,37 +4,6 @@ This is a Discord bot (Tournament Organizer#7975) designed to ameliorate the
 process of running a Mario Kart Wii tournament in Mogi Lounge
 (https://discord.gg/HkbxJAM).
 
-## Local Setup
-
-If you wish to set up your own bot and run this code locally, here are the
-prerequisites and the steps to do so:
-- A local copy of the repository;
-- Node.js and NPM;
-- Google Docs API access; and
-- a Discord bot.
-
-1. Switch to the `local-setup` branch.
-2. Download `credential.json` as explained [here](
-https://developers.google.com/docs/api/quickstart/nodejs) and store it as
-`googleapis-credentials.json` in this directory.
-3. Create `discord-token.json` in this directory consisting of your Discord
-bot's token surrounded by double quotes. You can find the token by going [here](
-https://discord.com/developers/applications), selecting your bot, and then
-navigating to the "Bot" tab in the left-hand sidebar.
-4. Update [this line](
-https://github.com/Sartaglo/tournamentorganizer/blob/811e24ed2bbae468eac6e55177d14b799cf5ab5e/act-on-message.js#L7)
-in the code to whomever you wish the bot to respond to, in addition to anyone
-with a role named "Boss", "Higher Tier Arbitrator", "Lower Tier Arbitrator", or
-"Custom Track Arbitrator".
-5. Run `npm install` in this directory and then run `npm start`.
-6. Navigate to provided URL to authorize your Google account, bypassing
-the verification warning as explained [here](
-https://developers.google.com/docs/api/quickstart/nodejs#this_app_isnt_verified),
-and then enter the provided access code. This will create
-`googleapis-token.json` for repeated use.
-7. Add your bot to a server and permit it to send and receive messages in the
-channels of your choosing.
-
 ## Commands
 
 Commands are executed by mentioning the bot and then providing the command and
