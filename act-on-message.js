@@ -227,6 +227,7 @@ const sendUpdate = async (
         + nonHostTeams.length
         + " non-host "
         + unitName
+        + (nonHostTeams.length === 1 ? "" : "s")
         + ". Room "
         + roomNumber
         + " of round "
