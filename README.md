@@ -40,9 +40,12 @@ channels of your choosing.
 Commands are executed by mentioning the bot and then providing the command and
 any parameters as needed.
 
-`,initialize <documentId> <teamSize> <hostCount> <nonHostCount>`
+`,initialize <documentId> <teamSize> <hostCount> <nonHostCount>
+[blacklistedPlayer,...]`
 
 Loads registrations from the identified Google Doc according to the parameters.
+Issues a warning about registrations that contain any of the blacklisted
+players, provided as a comma-separated list.
 
 `,rooms`
 
@@ -82,6 +85,12 @@ Displays the current advancements for the identified room in the current round.
 Displays how many rooms are done in the current round and lists the rooms that
 aren't done.
 
+`,blacklist [add|remove <blacklistedPlayer>,[...]]`
+
+Adds to, removes from, or lists the players banned from the next tournament.
+Note that this blacklist is independent of the list provided to `initialize`
+that applies to the current tournament.
+
 ## Roadmap
 
 - [x] A `status` command to provide a summary of rooms in the current round,
@@ -90,7 +99,8 @@ rooms do not.
 - [x] The implementation of a simpler command prefix than mentioning.
 - [x] Configuration of the bot to respond to tournament organizers.
 - [x] Restructuring of the bot to support running it headless on a server.
-- [ ] Preventing a team from being advanced in a room they were not in.
+- [x] Warn about a team being advanced in a room they were not in.
+- [x] Prevent a team from being advanced more than once in the same round.
+- [x] Warn about the registration of banned players.
+- [x] Keeping track of banned players.
 - [ ] The ability to register or unregister a team after initialization.
-- [ ] Keeping track of banned players.
-- [ ] Preventing registration of banned players.
