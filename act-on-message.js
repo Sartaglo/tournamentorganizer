@@ -114,6 +114,7 @@ const initialize = async (
     teamSize,
     hostCount,
     nonHostCount,
+    blacklist,
 ) => {
     google.docs({ version: "v1", auth: oAuth2Client }).documents.get(
         { documentId },
@@ -141,6 +142,7 @@ const initialize = async (
             currentTeamSize = teamSize;
             unitName = teamSize === 1 ? "player" : "team";
             currentRoundNumber = 1;
+            const messages = [];
             const content = response.data.body.content;
             let contentIndex = 0;
 
@@ -150,7 +152,18 @@ const initialize = async (
                     content,
                     contentIndex,
                 );
-                allHostTeams.push(registration);
+
+                if (registration === null) {
+                    messages.push(
+                        "**Error:** A blank host registration was encountered."
+                        + " Check the number of "
+                        + unitName
+                        + "s specified.",
+                    );
+                } else if (!registration.match(/^\s*$/)) {
+                    allHostTeams.push(registration);
+                }
+
                 contentIndex = nextIndex;
             }
 
@@ -163,11 +176,134 @@ const initialize = async (
                     contentIndex,
                 );
 
-                if (!registration.match(/^\s*$/)) {
+                if (registration === null) {
+                    messages.push(
+                        "**Warning:** A blank non-host registration was"
+                        + " encountered. Check the document and the number of "
+                        + unitName
+                        + "s specified.",
+                    );
+                } else if (!registration.match(/^\s*$/)) {
                     allNonHostTeams.push(registration);
                 }
 
                 contentIndex = nextIndex;
+            }
+
+            const blacklistedTeams = [];
+            const allTeams = allHostTeams.concat(allNonHostTeams);
+            allTeams.forEach(
+                (outerTeam, outerIndex) => {
+                    if (outerTeam.length === 0) {
+                        return;
+                    }
+
+                    const outer = outerTeam.toLowerCase();
+                    const serverNameRegex =
+                        /\[([A-Za-z0-9]{2,15})\]|\(([A-Za-z0-9]{2,15})\)/g;
+                    const serverNames = Array
+                        .from(outer.matchAll(serverNameRegex))
+                        .map((match) => match[1])
+                        .filter(
+                            (match) => typeof match === "string"
+                                && match.length > 1,
+                        );
+
+                    if (blacklist.some((item) => serverNames.includes(item))) {
+                        blacklistedTeams.push(outerTeam);
+                    }
+
+                    if (outerIndex < hostCount) {
+                        if (!outer.includes("can host")) {
+                            messages.push(
+                                "**Warning:** `"
+                                + outerTeam
+                                + "` will be treated as a host registration."
+                                + " Check the document and the number of "
+                                + unitName
+                                + "s specified for any discrepancies.",
+                            );
+                        }
+                    } else {
+                        if (outer.includes("can host")) {
+                            messages.push(
+                                "**Warning:** `"
+                                + outerTeam
+                                + "` will be treated as a non-host"
+                                + " registration. Check the document and the"
+                                + " number of "
+                                + unitName
+                                + "s specified for any discrepancies.",
+                            );
+                        }
+                    }
+
+                    const friendCodeRegex =
+                        /\(([0-9]{4}-[0-9]{4}-[0-9]{4})\)|\[([0-9]{4}-[0-9]{4}-[0-9]{4})\]/g;
+                    const friendCodes = Array
+                        .from(outer.matchAll(friendCodeRegex))
+                        .map((match) => match[1])
+                        .filter(
+                            (match) => typeof match === "string"
+                                && match.length > 1,
+                        );
+                    const outerSegments = serverNames.concat(friendCodes);
+                    allTeams
+                        .slice(outerIndex + 1)
+                        .forEach(
+                            (innerTeam) => {
+                                if (innerTeam.length === 0) {
+                                    return;
+                                }
+
+                                const inner = innerTeam.toLowerCase();
+                                const innerSegments = Array
+                                    .from(inner.matchAll(serverNameRegex))
+                                    .concat(
+                                        Array.from(
+                                            inner.matchAll(friendCodeRegex),
+                                        ),
+                                    )
+                                    .map((match) => match[1])
+                                    .filter(
+                                        (match) => typeof match === "string"
+                                            && match.length > 1,
+                                    );
+                                const outerIncludesInner = outerSegments.some(
+                                    (match) => innerSegments.includes(match),
+                                );
+                                const innerIncludesOuter = innerSegments.some(
+                                    (match) => outerSegments.includes(match),
+                                );
+
+                                if (outerIncludesInner
+                                    || innerIncludesOuter
+                                    || outer.includes(inner)
+                                    || inner.includes(outer)) {
+                                    messages.push(
+                                        "**Warning:** The following"
+                                        + " registrations could be duplicates"
+                                        + " of one another:"
+                                        + "\n`"
+                                        + outerTeam
+                                        + "`\n`"
+                                        + innerTeam
+                                        + "`",
+                                    );
+                                }
+                            },
+                        );
+                }
+            );
+
+            if (blacklistedTeams.length > 0) {
+                messages.push(
+                    "**Warning:** The following registrations could be on the"
+                    + " blacklist:"
+                    + blacklistedTeams
+                        .map((team) => "\n`" + team + "`")
+                        .join(''),
+                );
             }
 
             rounds = new Map();
@@ -178,12 +314,31 @@ const initialize = async (
                     nonHostTeams: allNonHostTeams.slice(),
                     advancementsByRoom: new Map(),
                     advancementCount: null,
-                });
-            saveRound(1);
-            await channel.send(
-                "Initialization complete.",
-                { files: ["round-1-hosts.txt", "round-1-non-hosts.txt"] },
+                    rooms: [],
+                },
             );
+            const fileName = "initialize-output.txt";
+            saveRound(1);
+            const baseContent = "Initialization complete.";
+            const extraContent = messages.join("\n");
+            const files = ["round-1-hosts.txt", "round-1-non-hosts.txt"];
+
+            if (baseContent.length + 1 + extraContent.length > 2000) {
+                fs.writeFileSync(fileName, messages.join("\r\n") + "\r\n");
+                files.unshift(fileName);
+                await channel.send(
+                    baseContent
+                    + " Check `"
+                    + fileName
+                    + "` for additional output.",
+                    { files },
+                );
+            } else {
+                await channel.send(
+                    [baseContent, ...messages].join("\n"),
+                    { files },
+                );
+            }
         }
     );
 };
@@ -197,6 +352,7 @@ const setRoundNumber = async (channel, roundNumber) => {
                 nonHostTeams: [],
                 advancementsByRoom: new Map(),
                 advancementCount: null,
+                rooms: [],
             },
         );
     }
@@ -212,6 +368,7 @@ const sendUpdate = async (
     roomNumber,
     hostTeams,
     nonHostTeams,
+    messages,
     advancementsByRoom,
     advancementCount,
 ) => {
@@ -256,69 +413,204 @@ const sendUpdate = async (
         + " "
         + unitName
         + (teamCount === 1 ? "" : "s")
-        + ".");
+        + ".";
+    const extraContent = messages.join("\n");
+
+    if (baseContent.length + 1 + extraContent.length > 2000) {
+        const fileName = action.toLowerCase().slice(0, action.length - 1)
+            + "-output.txt";
+        fs.writeFileSync(fileName, messages.join("\r\n") + "\r\n");
+        await channel.send(
+            baseContent
+            + " Check `"
+            + fileName
+            + "` for additional output.",
+            { files: [fileName] },
+        );
+    } else {
+        await channel.send([baseContent, ...messages].join("\n"));
+    }
 }
 
-const advanceTeams = (nextRound, advancements, teams) => {
+const advanceTeams = (roomNumber, teams) => {
+    const currentRound = rounds.get(currentRoundNumber);
+    const nextRound = rounds.get(currentRoundNumber + 1);
     const hostTeams = [];
     const nonHostTeams = [];
+    const messages = [];
     teams.forEach(
         (team) => {
-            if (allHostTeams.indexOf(team) !== -1
-                && nextRound.hostTeams.indexOf(team) === -1) {
-                hostTeams.push(team);
-            } else if (allNonHostTeams.indexOf(team) !== -1
-                && nextRound.nonHostTeams.indexOf(team) === -1) {
-                nonHostTeams.push(team);
+            const inAllHostTeams = allHostTeams.indexOf(team) !== -1;
+            const inNextHostTeams = nextRound.hostTeams.indexOf(team) !== -1;
+            const inAllNonHostTeams = allNonHostTeams.indexOf(team) !== -1;
+            const inNextNonHostTeams =
+                nextRound.nonHostTeams.indexOf(team) !== -1;
+            const containingRooms = currentRound.rooms
+                .map((room, index) => ({ roomNumber: index + 1, room }))
+                .filter(({ room }) => room.includes(team));
+
+            if (containingRooms.length > 0) {
+                if (containingRooms[0].roomNumber !== roomNumber) {
+                    messages.push(
+                        "**Warning:** `"
+                        + team
+                        + "` was in room "
+                        + containingRooms[0].roomNumber
+                        + " of round "
+                        + currentRoundNumber
+                        + ".",
+                    );
+                }
+            } else {
+                messages.push("**Warning:** `" + team + "` was not in a room.");
+            }
+
+            if (!inAllHostTeams && !inAllNonHostTeams) {
+                messages.push(
+                    "**Error:** `"
+                    +
+                    team
+                    + "` is not registered in the tournament.",
+                );
+            } else if (inAllHostTeams) {
+                if (inNextHostTeams) {
+                    messages.push(
+                        "**Error:** `"
+                        + team
+                        + "` has already been advanced to room "
+                        + Array
+                            .from(currentRound.advancementsByRoom)
+                            .find(
+                                ([_, advancements]) =>
+                                    advancements.includes(team),
+                            )[0]
+                        + " of round "
+                        + (currentRoundNumber + 1)
+                        + ".",
+                    );
+                } else {
+                    hostTeams.push(team);
+                }
+            } else {
+                if (inNextNonHostTeams) {
+                    messages.push(
+                        "**Error:** `"
+                        + team
+                        + "` has already been advanced to room "
+                        + Array
+                            .from(currentRound.advancementsByRoom)
+                            .find(
+                                ([_, advancements]) =>
+                                    advancements.includes(team),
+                            )[0]
+                        + " of round "
+                        + (currentRoundNumber + 1)
+                        + ".",
+                    );
+                } else {
+                    nonHostTeams.push(team);
+                }
             }
         },
     );
     nextRound.hostTeams.push(...hostTeams);
     nextRound.nonHostTeams.push(...nonHostTeams);
-    advancements.push(...hostTeams, ...nonHostTeams);
+    currentRound.advancementsByRoom
+        .get(roomNumber)
+        .push(...hostTeams, ...nonHostTeams);
     saveRound(currentRoundNumber + 1);
 
-    return { hostTeams, nonHostTeams };
+    return { hostTeams, nonHostTeams, messages };
 };
 
 const advance = async (channel, roomNumber, teams) => {
-    const {
-        advancementsByRoom,
-        advancementCount,
-    } = rounds.get(currentRoundNumber);
+    const currentRound = rounds.get(currentRoundNumber);
 
-    if (!advancementsByRoom.has(roomNumber)) {
+    if (!currentRound.advancementsByRoom.has(roomNumber)) {
+        await channel.send(
+            "Room "
+            + roomNumber
+            + " of round "
+            + currentRoundNumber
+            + " has not been initialized.",
+        );
+
         return;
     }
 
-    const nextRound = rounds.get(currentRoundNumber + 1);
     const {
         hostTeams,
         nonHostTeams,
-    } = advanceTeams(nextRound, advancementsByRoom.get(roomNumber), teams);
+        messages,
+    } = advanceTeams(roomNumber, teams);
     await sendUpdate(
         channel,
         "Advanced",
-        nextRound,
+        rounds.get(currentRoundNumber + 1),
         roomNumber,
         hostTeams,
         nonHostTeams,
-        advancementsByRoom,
-        advancementCount,
+        messages,
+        currentRound.advancementsByRoom,
+        currentRound.advancementCount,
     );
 };
 
-const unadvanceTeams = (nextRound, advancements, teams) => {
+const unadvanceTeams = (roomNumber, teams) => {
+    const nextRound = rounds.get(currentRoundNumber + 1);
+    const advancements =
+        rounds.get(currentRoundNumber).advancementsByRoom.get(roomNumber);
     const hostTeams = [];
     const nonHostTeams = [];
+    const messages = [];
     teams.forEach(
         (team) => {
-            if (allHostTeams.indexOf(team) !== -1
-                && nextRound.hostTeams.indexOf(team) !== -1) {
-                hostTeams.push(team);
-            } else if (allNonHostTeams.indexOf(team) !== -1
-                && nextRound.nonHostTeams.indexOf(team) !== -1) {
-                nonHostTeams.push(team);
+            const inAllHostTeams = allHostTeams.indexOf(team) !== -1;
+            const inNextHostTeams = nextRound.hostTeams.indexOf(team) !== -1;
+            const inAllNonHostTeams = allNonHostTeams.indexOf(team) !== -1;
+            const inNextNonHostTeams =
+                nextRound.nonHostTeams.indexOf(team) !== -1;
+
+            if (!inAllHostTeams && !inAllNonHostTeams) {
+                messages.push(
+                    "**Error:** `"
+                    + team
+                    + "` is not registered in the tournament.",
+                );
+            } else if (!advancements.includes(team)) {
+                messages.push(
+                    "**Error**: `"
+                    + team
+                    + "` has not been advanced to room "
+                    + roomNumber
+                    + " of round "
+                    + (currentRoundNumber + 1)
+                    + "."
+                );
+            } else if (inAllHostTeams) {
+                if (inNextHostTeams) {
+                    hostTeams.push(team);
+                } else {
+                    messages.push(
+                        "**Error:** `"
+                        + team
+                        + "` has not been advanced to round "
+                        + (currentRoundNumber + 1)
+                        + ".",
+                    );
+                }
+            } else if (inAllNonHostTeams) {
+                if (inNextNonHostTeams) {
+                    nonHostTeams.push(team);
+                } else {
+                    messages.push(
+                        "**Error:** `"
+                        + team
+                        + "` has not been advanced to round "
+                        + (currentRoundNumber + 1)
+                        + ".",
+                    );
+                }
             }
         },
     );
@@ -348,16 +640,13 @@ const unadvanceTeams = (nextRound, advancements, teams) => {
     );
     saveRound(currentRoundNumber + 1);
 
-    return { hostTeams, nonHostTeams };
+    return { hostTeams, nonHostTeams, messages };
 };
 
 const unadvance = async (channel, roomNumber, teams) => {
-    const {
-        advancementsByRoom,
-        advancementCount,
-    } = rounds.get(currentRoundNumber);
+    const currentRound = rounds.get(currentRoundNumber);
 
-    if (!advancementsByRoom.has(roomNumber)) {
+    if (!currentRound.advancementsByRoom.has(roomNumber)) {
         await channel.send(
             "Room "
             + roomNumber
@@ -373,7 +662,8 @@ const unadvance = async (channel, roomNumber, teams) => {
     const {
         hostTeams,
         nonHostTeams,
-    } = unadvanceTeams(nextRound, advancementsByRoom.get(roomNumber), teams);
+        messages,
+    } = unadvanceTeams(roomNumber, teams);
     await sendUpdate(
         channel,
         "Unadvanced",
@@ -381,8 +671,9 @@ const unadvance = async (channel, roomNumber, teams) => {
         roomNumber,
         hostTeams,
         nonHostTeams,
-        advancementsByRoom,
-        advancementCount,
+        messages,
+        currentRound.advancementsByRoom,
+        currentRound.advancementCount,
     );
 }
 
@@ -502,8 +793,8 @@ const makeRooms = async (channel) => {
     }
 
     const hosts = shuffle(hostTeams).slice(0, roomCount);
-    const rooms = hosts.map((host) => [host]);
-    rooms.forEach(
+    round.rooms = hosts.map((host) => [host]);
+    round.rooms.forEach(
         (_, index) => {
             advancementsByRoom.set(index + 1, []);
         },
@@ -513,10 +804,10 @@ const makeRooms = async (channel) => {
         .concat(nonHostTeams)
         .forEach(
             (team, teamIndex) => {
-                rooms[teamIndex % roomCount].push(team);
+                round.rooms[teamIndex % roomCount].push(team);
             },
         );
-    const roomTexts = rooms.map(
+    const roomTexts = round.rooms.map(
         (room, roomIndex) => "ROOM "
             + (roomIndex + 1)
             + "\r\n"
@@ -735,6 +1026,11 @@ module.exports = {
             const teamSize = Number.parseInt(parameters[1], 10);
             const hostCount = Number.parseInt(parameters[2], 10);
             const nonHostCount = Number.parseInt(parameters[3], 10);
+            const blacklist = parameters
+                .slice(4)
+                .join(" ")
+                .split(",")
+                .map((item) => item.trim().toLowerCase());
 
             if (typeof documentId !== "string"
                 || documentId.length === 0
@@ -743,7 +1039,8 @@ module.exports = {
                 || !Number.isSafeInteger(nonHostCount)) {
                 await message.channel.send(
                     "**Usage:** ,initialize"
-                    + " <documentId> <teamSize> <hostCount> <nonHostCount>",
+                    + " <documentId> <teamSize> <hostCount> <nonHostCount>"
+                    + " [blacklistedPlayer],[...]",
                 );
 
                 return;
@@ -755,6 +1052,7 @@ module.exports = {
                 teamSize,
                 hostCount,
                 nonHostCount,
+                blacklist,
             );
         } else if (commandWithoutPrefix === "round") {
             if (!message.guild) {
