@@ -851,10 +851,10 @@ const getRoundStatus = async (channel) => {
         advancementsByRoom,
         advancementCount,
     } = rounds.get(currentRoundNumber);
+    const advancingTeamCount = advancementCount / currentTeamSize;
     const notDoneRoomNumbers = Array.from(advancementsByRoom)
         .filter(
-            ([_, advancements]) =>
-                advancements.length !== advancementCount / currentTeamSize,
+            ([_, advancements]) => advancements.length !== advancingTeamCount,
         )
         .map(([roomNumber]) => roomNumber);
 
@@ -866,7 +866,15 @@ const getRoundStatus = async (channel) => {
         + (advancementsByRoom.size - notDoneRoomNumbers.length)
         + " out of "
         + advancementsByRoom.size
-        + " rooms done."
+        + " rooms with "
+        + advancingTeamCount
+        + "/"
+        + advancingTeamCount
+        + " "
+        + unitName
+        + (advancingTeamCount === 1 ? "" : "s")
+        + " advanced"
+        + "."
         + (notDoneRoomNumbers.length === 0
             ? ""
             : (" The following room"
