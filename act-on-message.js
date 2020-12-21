@@ -1215,6 +1215,10 @@ module.exports = {
 
             await getRoundStatus(message.channel);
         } else if (commandWithoutPrefix === "blacklist") {
+            if (!message.guild) {
+                return;
+            }
+
             const usage =
                 "**Usage:** ,blacklist [add|remove <blacklistedPlayer>,[...]]";
             const subCommand = parameters[0];
