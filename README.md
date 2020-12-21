@@ -60,7 +60,7 @@ Adds to, removes from, or lists the players banned from the next tournament.
 Note that this blacklist is independent of the list provided to `initialize`
 that applies to the current tournament.
 
-## 1.0 Roadmap
+## Version 1.0 Roadmap
 
 - [x] A `status` command to provide a summary of rooms in the current round,
 specifically how many rooms have the expected number of advancements and which
@@ -74,7 +74,7 @@ rooms do not.
 - [x] Keeping track of banned players.
 - [x] The ability to register or unregister a team after initialization.
 
-## 2.0 Roadmap
+## Version 2.0 Roadmap
 
 - [ ] Check manual registrations for duplicates or banned players.
 - [ ] Restore bot state from files.
