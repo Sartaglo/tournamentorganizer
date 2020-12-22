@@ -216,7 +216,7 @@ const initialize = async (
                     }
 
                     if (outerIndex < hostCount) {
-                        if (!outer.includes("can host")) {
+                        if (!outer.includes("host")) {
                             messages.push(
                                 "**Warning:** `"
                                 + outerTeam
@@ -227,7 +227,7 @@ const initialize = async (
                             );
                         }
                     } else {
-                        if (outer.includes("can host")) {
+                        if (outer.includes("host")) {
                             messages.push(
                                 "**Warning:** `"
                                 + outerTeam
