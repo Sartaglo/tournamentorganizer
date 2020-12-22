@@ -78,3 +78,4 @@ rooms do not.
 
 - [ ] Check manual registrations for duplicates or banned players.
 - [ ] Restore bot state from files.
+- [ ] Warn about the host registration of hostbanned players.
