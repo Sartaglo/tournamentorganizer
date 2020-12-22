@@ -77,5 +77,5 @@ rooms do not.
 ## Version 2.0 Roadmap
 
 - [ ] Check manual registrations for duplicates or banned players.
-- [ ] Restore bot state from files.
 - [ ] Warn about the host registration of hostbanned players.
+- [ ] Restore bot state from files.
