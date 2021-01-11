@@ -76,7 +76,7 @@ rooms do not.
 
 ## Version 2.0 Roadmap
 
-- [x] Update list of permitted roles for tournament organization.
+- [x] Update the list of permitted roles for tournament organization (Boss, HTRTA, LTRTA, HTCTA, LTCTA).
 - [ ] Reject asterisks, underscores, and colons in registrations to avoid issues with Discord emojis and formatting.
 - [ ] Implement a command for players to manage their own registrations, including the ability to update the content of their registration and the ability to unregister.
 - [ ] Check manual registrations for duplicates or banned players.
