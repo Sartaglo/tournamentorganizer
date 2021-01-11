@@ -1037,9 +1037,11 @@ module.exports = {
 
         const roles = [
             "Boss",
-            "Higher Tier Arbitrator",
-            "Lower Tier Arbitrator",
-            "Custom Track Arbitrator",
+            "CT Admin",
+            "Higher Tier RT Arbitrator",
+            "Lower Tier RT Arbitrator",
+            "Higher Tier CT Arbitrator",
+            "Lower Tier CT Arbitrator",
         ];
 
         if (!authorisAdmin
