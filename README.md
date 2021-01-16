@@ -16,11 +16,13 @@ Loads registrations from the identified Google Doc according to the parameters.
 Issues a warning about registrations that contain any of the blacklisted
 players, provided as a comma-separated list.
 
-`,rooms`
+`,rooms [roomCount advancementCount]`
 
 Randomly generates rooms for the current round, choosing the best number of
 rounds corresponding to the number of players and team size that divides evenly
-into a final room.
+into a final room. If room count and advancement count are provided then it will
+generate that many rooms and expect to advance that many *players* (not teams)
+instead.
 
 `,round <roundNumber>`
 

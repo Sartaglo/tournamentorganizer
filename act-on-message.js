@@ -804,23 +804,7 @@ const getRoomParameters = async () => {
     return null;
 }
 
-const makeRooms = async (channel) => {
-    if (!rounds.has(currentRoundNumber)) {
-        await channel.send(
-            "Round " + currentRoundNumber + " has not been initialized.",
-        );
-
-        return;
-    }
-
-    const { roomCount, advancementCount } = await getRoomParameters();
-
-    if (roomCount === null) {
-        await channel.send("At most 768 players are supported.");
-
-        return;
-    }
-
+const generateRooms = async (channel, roomCount, advancementCount) => {
     const round = rounds.get(currentRoundNumber);
     round.advancementCount = advancementCount;
     const { hostTeams, nonHostTeams, advancementsByRoom } = round;
@@ -878,6 +862,31 @@ const makeRooms = async (channel) => {
                 + " in each room.")),
         { files: [fileName] }
     );
+}
+
+const makeRooms = async (channel, manualRoomCount, manualAdvancementCount) => {
+    if (!rounds.has(currentRoundNumber)) {
+        await channel.send(
+            "Round " + currentRoundNumber + " has not been initialized.",
+        );
+
+        return;
+    }
+
+    if (Number.isInteger(manualRoomCount)
+        && Number.isInteger(manualAdvancementCount)) {
+        generateRooms(channel, manualRoomCount, manualAdvancementCount);
+    } else {
+        const { roomCount, advancementCount } = await getRoomParameters();
+
+        if (roomCount === null) {
+            await channel.send("At most 768 players are supported.");
+
+            return;
+        }
+
+        generateRooms(channel, roomCount, advancementCount);
+    }
 };
 
 const getRoomResults = async (channel, roomNumber) => {
@@ -1021,11 +1030,6 @@ const removeFromBlacklist = async (channel, names) => {
     );
     await sendBlacklistMessage(channel);
 };
-
-const clearBlacklist = async (channel) => {
-    blacklist = [];
-    await sendBlacklistMessage(channel);
-}
 
 module.exports = {
     actOnMessage: async (message) => {
@@ -1241,7 +1245,25 @@ module.exports = {
                 return;
             }
 
-            await makeRooms(message.channel);
+            const roomCount = Number.parseInt(parameters[0], 10);
+            const hasRoomCount = Number.isInteger(roomCount);
+            const advancementCount = Number.parseInt(parameters[1], 10);
+            const hasAdvancementCount = Number.isInteger(advancementCount);
+
+            if ((hasRoomCount && !hasAdvancementCount)
+                || (!hasRoomCount && hasAdvancementCount)) {
+                await message.channel.send(
+                    "**Usage:** ,rooms [roomCount advancementCount]",
+                );
+
+                return;
+            }
+
+            await makeRooms(
+                message.channel,
+                roomCount,
+                advancementCount,
+            );
         } else if (commandWithoutPrefix === "advance"
             || commandWithoutPrefix === "unadvance") {
             if (!message.guild) {
