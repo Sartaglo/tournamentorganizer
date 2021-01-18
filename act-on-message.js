@@ -156,6 +156,52 @@ exports.actOnMessage = async (message) => {
             console.error("Error authenticating:", error.stack);
             await admin.send(error.stack);
         }
+    } else if (commandWithoutPrefix === "guilds") {
+        if (message.guild || !authorisAdmin) {
+            return;
+        }
+
+        try {
+            const guilds = Array.from(message.client.guilds.cache.values());
+            await message.channel.send(
+                "I am in the following guild"
+                + (guilds.length === 1 ? "" : "s")
+                + ":\n"
+                + guilds
+                    .map((guild) => guild.name + " (" + guild.id + ")")
+                    .join("\n"),
+            );
+        } catch (error) {
+            console.error(error.stack);
+            await admin.send(error.stack);
+        }
+    } else if (commandWithoutPrefix === "leave") {
+        if (message.guild || !authorisAdmin) {
+            return;
+        }
+
+        const guildId = parameters[0];
+
+        if (typeof guildId !== "string" || guildId.length === 0) {
+            await admin.send("**Usage:** ,leave <guildId>");
+
+            return;
+        }
+
+        try {
+            const guild = await message.client.guilds.fetch(
+                guildId,
+                false,
+                true,
+            );
+            await guild.leave();
+            await admin.send(
+                "I am no longer in " + guild.name + " (" + guild.id + ").",
+            );
+        } catch (error) {
+            console.error(error.stack);
+            await admin.send(error.stack);
+        }
     } else if (commandWithoutPrefix === "initialize") {
         if (!message.guild) {
             return;
