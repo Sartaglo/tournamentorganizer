@@ -5,8 +5,10 @@ const { addToBlacklist } = require("./add-to-blacklist");
 const { advance } = require("./advance");
 const { getRoomResults } = require("./get-room-results");
 const { getRoundStatus } = require("./get-round-status");
+const { handleRegistration } = require("./handle-registration");
 const { initialize } = require("./initialize");
 const { makeRooms } = require("./make-rooms");
+const { openRegistrations } = require("./open-registrations");
 const { registerHost } = require("./register-host");
 const { registerNonHost } = require("./register-non-host");
 const { removeFromBlacklist } = require("./remove-from-blacklist");
@@ -38,6 +40,18 @@ exports.actOnMessage = async (message) => {
     const authorisAdmin = message.author.id === adminId;
 
     if (!message.guild && !authorisAdmin) {
+        return;
+    }
+
+    const entry = Array
+        .from(states)
+        .find(
+            ([_, state]) => message.channel.id === state.registrationChannelId,
+        );
+
+    if (typeof entry !== 'undefined') {
+        await handleRegistration(adminId, oAuth2Client, message, entry[1]);
+
         return;
     }
 
@@ -124,7 +138,7 @@ exports.actOnMessage = async (message) => {
             {
                 access_type: "offline",
                 scope: [
-                    "https://www.googleapis.com/auth/documents.readonly",
+                    "https://www.googleapis.com/auth/documents",
                 ],
             }
         );
@@ -202,6 +216,31 @@ exports.actOnMessage = async (message) => {
             console.error(error.stack);
             await admin.send(error.stack);
         }
+    } else if (commandWithoutPrefix === "open") {
+        if (!authorisAdmin) {
+            return;
+        }
+
+        const usage = "**Usage:** ,open <registrationChannel> <documentId>";
+        const result = parameters[0].match(/^<#([0-9]+)>$/);
+        const registrationDocumentId = parameters[1];
+
+        if (!Array.isArray(result)
+            || result.length !== 2
+            || typeof registrationDocumentId !== "string"
+            || registrationDocumentId.length === 0) {
+            await message.channel.send(usage);
+
+            return;
+        }
+
+        const registrationChannelId = result[1];
+        await openRegistrations(
+            message.channel,
+            states.get(message.channel.id),
+            registrationChannelId,
+            registrationDocumentId,
+        );
     } else if (commandWithoutPrefix === "initialize") {
         if (!message.guild) {
             return;
@@ -232,6 +271,7 @@ exports.actOnMessage = async (message) => {
         }
 
         await initialize(
+            adminId,
             oAuth2Client,
             message.channel,
             states.get(message.channel.id),

@@ -1,7 +1,7 @@
 "use strict";
 
 const fs = require("fs");
-const { google } = require("googleapis");
+const { getDocument } = require("./get-document");
 const { saveRound } = require("./save-round");
 
 const parseRegistration = (content, startIndex) => {
@@ -64,6 +64,7 @@ const findNextRegistration = (content, startIndex) => {
 };
 
 exports.initialize = async (
+    adminId,
     oAuth2Client,
     channel,
     state,
@@ -73,232 +74,203 @@ exports.initialize = async (
     nonHostCount,
     blacklist,
 ) => {
-    google.docs({ version: "v1", auth: oAuth2Client }).documents.get(
-        { documentId },
-        async (error, response) => {
-            if (error) {
-                console.error("Error using Google Docs:", error.stack);
-                await channel.send(
-                    "An error was encountered with Google Docs. The error has"
-                    + " been reported to <@"
-                    + adminId
-                    + ">.",
-                );
-                const admin = await channel.client.users.fetch(
-                    adminId,
-                    false,
-                    true,
-                );
-                await admin.send(error.stack);
+    const document = await getDocument(adminId, oAuth2Client, documentId);
+    const content = document.body.content;
+    state.allHostTeams = [];
+    state.allNonHostTeams = [];
+    state.currentTeamSize = teamSize;
+    state.unitName = teamSize === 1 ? "player" : "team";
+    state.currentRoundNumber = 1;
+    const messages = [];
+    let contentIndex = 0;
 
+    while (state.allHostTeams.length < hostCount
+        && contentIndex < content.length) {
+        const { registration, nextIndex } = parseRegistration(
+            content,
+            contentIndex,
+        );
+
+        if (registration === null) {
+            messages.push(
+                "**Error:** A blank host registration was encountered."
+                + " Check the number of "
+                + state.unitName
+                + "s specified.",
+            );
+        } else if (!registration.match(/^\s*$/)) {
+            state.allHostTeams.push(registration);
+        }
+
+        contentIndex = nextIndex;
+    }
+
+    contentIndex = findNextRegistration(content, contentIndex);
+
+    while (state.allNonHostTeams.length < nonHostCount
+        && contentIndex < content.length) {
+        const { registration, nextIndex } = parseRegistration(
+            content,
+            contentIndex,
+        );
+
+        if (registration === null) {
+            messages.push(
+                "**Warning:** A blank non-host registration was"
+                + " encountered. Check the document and the number of "
+                + state.unitName
+                + "s specified.",
+            );
+        } else if (!registration.match(/^\s*$/)) {
+            state.allNonHostTeams.push(registration);
+        }
+
+        contentIndex = nextIndex;
+    }
+
+    const blacklistedTeams = [];
+    const allTeams = state.allHostTeams.concat(state.allNonHostTeams);
+    allTeams.forEach(
+        (outerTeam, outerIndex) => {
+            if (outerTeam.length === 0) {
                 return;
             }
 
-            state.allHostTeams = [];
-            state.allNonHostTeams = [];
-            state.currentTeamSize = teamSize;
-            state.unitName = teamSize === 1 ? "player" : "team";
-            state.currentRoundNumber = 1;
-            const messages = [];
-            const content = response.data.body.content;
-            let contentIndex = 0;
-
-            while (state.allHostTeams.length < hostCount
-                && contentIndex < content.length) {
-                const { registration, nextIndex } = parseRegistration(
-                    content,
-                    contentIndex,
+            const outer = outerTeam.toLowerCase();
+            const serverNameRegex =
+                /\[([A-Za-z0-9]{2,15})\]|\(([A-Za-z0-9]{2,15})\)/g;
+            const serverNames = Array
+                .from(outer.matchAll(serverNameRegex))
+                .map((match) => match[1])
+                .filter(
+                    (match) => typeof match === "string"
+                        && match.length > 1,
                 );
 
-                if (registration === null) {
+            if (blacklist.some((item) => serverNames.includes(item))) {
+                blacklistedTeams.push(outerTeam);
+            }
+
+            if (outerIndex < hostCount) {
+                if (!outer.includes("host")) {
                     messages.push(
-                        "**Error:** A blank host registration was encountered."
-                        + " Check the number of "
+                        "**Warning:** `"
+                        + outerTeam
+                        + "` will be treated as a host registration. Check the"
+                        + " document and the number of "
                         + state.unitName
-                        + "s specified.",
+                        + "s specified for any discrepancies.",
                     );
-                } else if (!registration.match(/^\s*$/)) {
-                    state.allHostTeams.push(registration);
                 }
-
-                contentIndex = nextIndex;
-            }
-
-            contentIndex = findNextRegistration(content, contentIndex);
-
-            while (state.allNonHostTeams.length < nonHostCount
-                && contentIndex < content.length) {
-                const { registration, nextIndex } = parseRegistration(
-                    content,
-                    contentIndex,
-                );
-
-                if (registration === null) {
-                    messages.push(
-                        "**Warning:** A blank non-host registration was"
-                        + " encountered. Check the document and the number of "
-                        + state.unitName
-                        + "s specified.",
-                    );
-                } else if (!registration.match(/^\s*$/)) {
-                    state.allNonHostTeams.push(registration);
-                }
-
-                contentIndex = nextIndex;
-            }
-
-            const blacklistedTeams = [];
-            const allTeams = state.allHostTeams.concat(state.allNonHostTeams);
-            allTeams.forEach(
-                (outerTeam, outerIndex) => {
-                    if (outerTeam.length === 0) {
-                        return;
-                    }
-
-                    const outer = outerTeam.toLowerCase();
-                    const serverNameRegex =
-                        /\[([A-Za-z0-9]{2,15})\]|\(([A-Za-z0-9]{2,15})\)/g;
-                    const serverNames = Array
-                        .from(outer.matchAll(serverNameRegex))
-                        .map((match) => match[1])
-                        .filter(
-                            (match) => typeof match === "string"
-                                && match.length > 1,
-                        );
-
-                    if (blacklist.some((item) => serverNames.includes(item))) {
-                        blacklistedTeams.push(outerTeam);
-                    }
-
-                    if (outerIndex < hostCount) {
-                        if (!outer.includes("host")) {
-                            messages.push(
-                                "**Warning:** `"
-                                + outerTeam
-                                + "` will be treated as a host registration."
-                                + " Check the document and the number of "
-                                + state.unitName
-                                + "s specified for any discrepancies.",
-                            );
-                        }
-                    } else {
-                        if (outer.includes("host")) {
-                            messages.push(
-                                "**Warning:** `"
-                                + outerTeam
-                                + "` will be treated as a non-host"
-                                + " registration. Check the document and the"
-                                + " number of "
-                                + state.unitName
-                                + "s specified for any discrepancies.",
-                            );
-                        }
-                    }
-
-                    const friendCodeRegex =
-                        /\(([0-9]{4}-[0-9]{4}-[0-9]{4})\)|\[([0-9]{4}-[0-9]{4}-[0-9]{4})\]/g;
-                    const friendCodes = Array
-                        .from(outer.matchAll(friendCodeRegex))
-                        .map((match) => match[1])
-                        .filter(
-                            (match) => typeof match === "string"
-                                && match.length > 1,
-                        );
-                    const outerSegments = serverNames.concat(friendCodes);
-                    allTeams
-                        .slice(outerIndex + 1)
-                        .forEach(
-                            (innerTeam) => {
-                                if (innerTeam.length === 0) {
-                                    return;
-                                }
-
-                                const inner = innerTeam.toLowerCase();
-                                const innerSegments = Array
-                                    .from(inner.matchAll(serverNameRegex))
-                                    .concat(
-                                        Array.from(
-                                            inner.matchAll(friendCodeRegex),
-                                        ),
-                                    )
-                                    .map((match) => match[1])
-                                    .filter(
-                                        (match) => typeof match === "string"
-                                            && match.length > 1,
-                                    );
-                                const outerIncludesInner = outerSegments.some(
-                                    (match) => innerSegments.includes(match),
-                                );
-                                const innerIncludesOuter = innerSegments.some(
-                                    (match) => outerSegments.includes(match),
-                                );
-
-                                if (outerIncludesInner
-                                    || innerIncludesOuter
-                                    || outer.includes(inner)
-                                    || inner.includes(outer)) {
-                                    messages.push(
-                                        "**Warning:** The following"
-                                        + " registrations could be duplicates"
-                                        + " of one another:"
-                                        + "\n`"
-                                        + outerTeam
-                                        + "`\n`"
-                                        + innerTeam
-                                        + "`",
-                                    );
-                                }
-                            },
-                        );
-                }
-            );
-
-            if (blacklistedTeams.length > 0) {
-                messages.push(
-                    "**Warning:** The following registrations could be on the"
-                    + " blacklist:"
-                    + blacklistedTeams
-                        .map((team) => "\n`" + team + "`")
-                        .join(''),
-                );
-            }
-
-            state.rounds = new Map();
-            state.rounds.set(
-                1,
-                {
-                    hostTeams: state.allHostTeams.slice(),
-                    nonHostTeams: state.allNonHostTeams.slice(),
-                    advancementsByRoom: new Map(),
-                    advancementCount: null,
-                    rooms: [],
-                },
-            );
-            const fileName = channel.id + "-initialize-output.txt";
-            saveRound(channel, state, 1);
-            const baseContent = "Initialization complete.";
-            const extraContent = messages.join("\n");
-            const files = [
-                channel.id + "-round-1-hosts.txt",
-                channel.id + "-round-1-non-hosts.txt",
-            ];
-
-            if (baseContent.length + 1 + extraContent.length > 2000) {
-                fs.writeFileSync(fileName, messages.join("\r\n") + "\r\n");
-                files.unshift(fileName);
-                await channel.send(
-                    baseContent
-                    + " Check `"
-                    + fileName
-                    + "` for additional output.",
-                    { files },
-                );
             } else {
-                await channel.send(
-                    [baseContent, ...messages].join("\n"),
-                    { files },
-                );
+                if (outer.includes("host")) {
+                    messages.push(
+                        "**Warning:** `"
+                        + outerTeam
+                        + "` will be treated as a non-host registration. Check"
+                        + " the document and the number of "
+                        + state.unitName
+                        + "s specified for any discrepancies.",
+                    );
+                }
             }
+
+            const friendCodeRegex =
+                /\(([0-9]{4}-[0-9]{4}-[0-9]{4})\)|\[([0-9]{4}-[0-9]{4}-[0-9]{4})\]/g;
+            const friendCodes = Array
+                .from(outer.matchAll(friendCodeRegex))
+                .map((match) => match[1])
+                .filter(
+                    (match) => typeof match === "string"
+                        && match.length > 1,
+                );
+            const outerSegments = serverNames.concat(friendCodes);
+            allTeams
+                .slice(outerIndex + 1)
+                .forEach(
+                    (innerTeam) => {
+                        if (innerTeam.length === 0) {
+                            return;
+                        }
+
+                        const inner = innerTeam.toLowerCase();
+                        const innerSegments = Array
+                            .from(inner.matchAll(serverNameRegex))
+                            .concat(
+                                Array.from(
+                                    inner.matchAll(friendCodeRegex),
+                                ),
+                            )
+                            .map((match) => match[1])
+                            .filter(
+                                (match) => typeof match === "string"
+                                    && match.length > 1,
+                            );
+                        const outerIncludesInner = outerSegments.some(
+                            (match) => innerSegments.includes(match),
+                        );
+                        const innerIncludesOuter = innerSegments.some(
+                            (match) => outerSegments.includes(match),
+                        );
+
+                        if (outerIncludesInner
+                            || innerIncludesOuter
+                            || outer.includes(inner)
+                            || inner.includes(outer)) {
+                            messages.push(
+                                "**Warning:** The following"
+                                + " registrations could be duplicates"
+                                + " of one another:"
+                                + "\n`"
+                                + outerTeam
+                                + "`\n`"
+                                + innerTeam
+                                + "`",
+                            );
+                        }
+                    },
+                );
         }
     );
+
+    if (blacklistedTeams.length > 0) {
+        messages.push(
+            "**Warning:** The following registrations could be on the"
+            + " blacklist:"
+            + blacklistedTeams
+                .map((team) => "\n`" + team + "`")
+                .join(''),
+        );
+    }
+
+    state.rounds = new Map();
+    state.rounds.set(
+        1,
+        {
+            hostTeams: state.allHostTeams.slice(),
+            nonHostTeams: state.allNonHostTeams.slice(),
+            advancementsByRoom: new Map(),
+            advancementCount: null,
+            rooms: [],
+        },
+    );
+    const fileName = channel.id + "-initialize-output.txt";
+    saveRound(channel, state, 1);
+    const baseContent = "Initialization complete.";
+    const extraContent = messages.join("\n");
+    const files = [
+        channel.id + "-round-1-hosts.txt",
+        channel.id + "-round-1-non-hosts.txt",
+    ];
+
+    if (baseContent.length + 1 + extraContent.length > 2000) {
+        fs.writeFileSync(fileName, messages.join("\r\n") + "\r\n");
+        files.unshift(fileName);
+        await channel.send(
+            baseContent + " Check `" + fileName + "` for additional output.",
+            { files },
+        );
+    } else {
+        await channel.send([baseContent, ...messages].join("\n"), { files });
+    }
 };
