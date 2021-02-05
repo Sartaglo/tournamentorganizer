@@ -49,6 +49,7 @@ exports.actOnMessage = async (message) => {
         "Higher Tier CT Arbitrator",
         "Lower Tier CT Arbitrator",
         "Admin",
+        "Moderators",
         "Tournament Organizers",
     ];
 
