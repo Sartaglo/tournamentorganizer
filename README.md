@@ -6,8 +6,7 @@ process of running a Mario Kart Wii tournament in Mogi Lounge
 
 ## Commands
 
-Commands are executed by mentioning the bot and then providing the command and
-any parameters as needed.
+Commands are executed by providing the command and any parameters as needed.
 
 `,initialize <documentId> <teamSize> <hostCount> <nonHostCount>
 [blacklistedPlayer,...]`
