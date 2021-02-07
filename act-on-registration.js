@@ -93,6 +93,23 @@ const parseListItem = (paragraph) => {
         );
 };
 
+const isCan = (registrationContent) => {
+    const content = registrationContent.toLocaleUpperCase();
+
+    return content.startsWith("!C")
+        && !content.startsWith("!CH")
+        && !content.startsWith("!CANH");
+};
+
+const isCanHost = (registrationContent) => {
+    const content = registrationContent.toLocaleUpperCase();
+
+    return content.startsWith("!CH") || content.startsWith("!CANH");
+};
+
+const isDrop = (registrationContent) =>
+    registrationContent.toLocaleUpperCase().startsWith("!D");
+
 const getFormatError = (teamSize, content) => {
     if (!Number.isInteger(teamSize) || teamSize <= 0) {
         return "Expected `" + content + "` to be in the correct format.";
@@ -285,7 +302,7 @@ const parseDocumentRegistrations = async (channel, teamSize, content) => {
 const parseRegistrationContent = (teamSize, registrationContent) => {
     if (registrationContent.includes("\n")) {
         if (registrationContent.includes(",")) {
-            const blah = registrationContent
+            return registrationContent
                 .split("\n")
                 .reduce(
                     (segments, line, index) => {
@@ -299,8 +316,6 @@ const parseRegistrationContent = (teamSize, registrationContent) => {
                     },
                     [],
                 );
-            console.log(blah);
-            return blah;
         }
 
         const multiLineBracketRegex = new RegExp(
@@ -388,10 +403,10 @@ const getDeleteContentRange = (
 
 exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
     const registrationContent = sanitizeInput(message.content);
-    const canHost = registrationContent.startsWith("!ch");
-    const dropping = registrationContent.startsWith("!d");
+    const canHost = isCanHost(registrationContent);
+    const dropping = isDrop(registrationContent);
 
-    if (!registrationContent.startsWith("!c") && !canHost && !dropping) {
+    if (!isCan(registrationContent) && !canHost && !dropping) {
         return;
     }
 
@@ -429,10 +444,12 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         await sendOutput(botChannel, "", result.messages, fileName, []);
     }
 
-    const segments = parseRegistrationContent(
-        state.currentTeamSize,
-        registrationContent.split(" ").slice(1).join(" "),
-    );
+    const segments = dropping
+        ? []
+        : parseRegistrationContent(
+            state.currentTeamSize,
+            registrationContent.split(" ").slice(1).join(" "),
+        );
 
     if (!dropping
         && (segments === null
