@@ -352,7 +352,6 @@ const parseRegistrationContent = (teamSize, registrationContent) => {
             segments.splice(1, 1);
         }
 
-        console.log(segments);
         return segments;
     }
 
