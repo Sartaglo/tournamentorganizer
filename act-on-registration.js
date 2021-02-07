@@ -29,7 +29,13 @@ const listItems = (items) => {
         .join(", ");
 };
 
-const sanitizeInput = (input) => input.replace(/[ \t]+/g, " ").trim();
+const sanitizeInput = (input) => Array
+    .from(input.replace(/[ \t]+/g, " ").trim())
+    .map(
+        (character) => character.charCodeAt(0) >= 0xE000
+            ? ("0x" + character.charCodeAt(0).toString(16).toLocaleUpperCase())
+            : character,
+    ).join("");
 
 const stringsEqual = (first, second) => {
     if (typeof first !== "string" && typeof second !== "string") {
