@@ -124,6 +124,7 @@ const isValidLoungeName = (loungeName) =>
     (/^[A-Za-z0-9 ]{2,15}$/).test(loungeName);
 
 const isValidMiiName = (miiName) => typeof miiName === "string"
+    && miiName.length > 0
     && miiName.length <= 10;
 
 const parseRegistration = (teamSize, content) => {
