@@ -1,11 +1,11 @@
 "use strict";
 
 const { google } = require("googleapis");
+const { actOnRegistration } = require("./act-on-registration");
 const { addToBlacklist } = require("./add-to-blacklist");
 const { advance } = require("./advance");
 const { getRoomResults } = require("./get-room-results");
 const { getRoundStatus } = require("./get-round-status");
-const { handleRegistration } = require("./handle-registration");
 const { initialize } = require("./initialize");
 const { makeRooms } = require("./make-rooms");
 const { openRegistrations } = require("./open-registrations");
@@ -50,7 +50,7 @@ exports.actOnMessage = async (message) => {
         );
 
     if (typeof entry !== 'undefined') {
-        await handleRegistration(adminId, oAuth2Client, message, entry[1]);
+        await actOnRegistration(adminId, oAuth2Client, message, entry[1]);
 
         return;
     }
@@ -224,14 +224,28 @@ exports.actOnMessage = async (message) => {
             return;
         }
 
-        const usage = "**Usage:** ,open <registrationChannel> <documentId>";
+        const state = states.get(message.channel.id);
+
+        if (typeof state.registrationChannelId === "string") {
+            await message.channel.send(
+                "I am already watching <#" + state.registrationChannelId + ">.",
+            );
+
+            return;
+        }
+
+        const usage =
+            "**Usage:** ,open <registrationChannel> <documentId> <teamSize>";
         const result = parameters[0].match(/^<#([0-9]+)>$/);
         const registrationDocumentId = parameters[1];
+        const teamSize = Number.parseInt(parameters[2]);
 
         if (!Array.isArray(result)
             || result.length !== 2
             || typeof registrationDocumentId !== "string"
-            || registrationDocumentId.length === 0) {
+            || registrationDocumentId.length === 0
+            || !Number.isInteger(teamSize)
+            || teamSize < 1) {
             await message.channel.send(usage);
 
             return;
@@ -240,12 +254,41 @@ exports.actOnMessage = async (message) => {
         const registrationChannelId = result[1];
         await openRegistrations(
             message.channel,
-            states.get(message.channel.id),
+            state,
             registrationChannelId,
             registrationDocumentId,
+            teamSize,
+        );
+    } else if (commandWithoutPrefix === "close") {
+        if (!authorisAdmin) {
+            return;
+        }
+
+        const state = states.get(message.channel.id);
+
+        if (typeof state.registrationChannelId !== "string") {
+            await message.channel.send("I am not watching any channel.");
+
+            return;
+        }
+
+        const registrationChannelId = state.registrationChannelId;
+        delete state.registrationChannelId;
+        await message.channel.send(
+            "I am no longer watching <#" + registrationChannelId + ">.",
         );
     } else if (commandWithoutPrefix === "initialize") {
         if (!message.guild) {
+            return;
+        }
+
+        const state = states.get(message.channel.id);
+
+        if (typeof state.registrationChannelId === "string") {
+            await message.channel.send(
+                "I am still watching <#" + state.registrationChannelId + ">.",
+            );
+
             return;
         }
 
@@ -277,7 +320,7 @@ exports.actOnMessage = async (message) => {
             adminId,
             oAuth2Client,
             message.channel,
-            states.get(message.channel.id),
+            state,
             documentId,
             teamSize,
             hostCount,

@@ -1,6 +1,6 @@
 "use strict";
 
-const fs = require("fs");
+const { sendOutput } = require("./send-output");
 
 exports.sendUpdate = async (
     channel,
@@ -56,22 +56,9 @@ exports.sendUpdate = async (
         + state.unitName
         + (teamCount === 1 ? "" : "s")
         + ".";
-    const extraContent = messages.join("\n");
-
-    if (baseContent.length + 1 + extraContent.length > 2000) {
-        const fileName = channel.id
-            + "-"
-            + action.toLowerCase().slice(0, action.length - 1)
-            + "-output.txt";
-        fs.writeFileSync(fileName, messages.join("\r\n") + "\r\n");
-        await channel.send(
-            baseContent
-            + " Check `"
-            + fileName
-            + "` for additional output.",
-            { files: [fileName] },
-        );
-    } else {
-        await channel.send([baseContent, ...messages].join("\n"));
-    }
+    const fileName = channel.id
+        + "-"
+        + action.toLowerCase().slice(0, action.length - 1)
+        + "-output.txt";
+    await sendOutput(channel, baseContent, messages, fileName, []);
 };

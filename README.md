@@ -1,4 +1,4 @@
-# Tournament Organizer 1.0
+# Tournament Organizer 2.0
 
 This is a Discord bot (Tournament Organizer#7975) designed to ameliorate the
 process of running a Mario Kart Wii tournament in Mogi Lounge
@@ -79,7 +79,10 @@ rooms do not.
 
 - [x] Update the list of permitted roles for tournament organization (Boss, HTRTA, LTRTA, HTCTA, LTCTA).
 - [x] Split up `act-on-message.js` and manage state per Discord channel.
-- [ ] Implement a command for players to manage their own registrations, including the ability to update the content of their registration and the ability to unregister.
+- [x] Implement a command for players to manage their own registrations, including the ability to update the content of their registration and the ability to unregister.
+
+## Version 3.0 Roadmap
+
 - [ ] Restore bot state from files.
 - [ ] Automatically advance everyone in a room if the room has no more players than the advancement count.
 - [ ] Check manual registrations for duplicates or banned players.

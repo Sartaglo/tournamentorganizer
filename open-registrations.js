@@ -7,8 +7,12 @@ exports.openRegistrations = async (
     state,
     registrationChannelId,
     registrationDocumentId,
+    teamSize,
 ) => {
-    const channel = await tryGetChannel(messageChannel, registrationChannelId);
+    const channel = await tryGetChannel(
+        messageChannel.client,
+        registrationChannelId,
+    );
 
     if (channel === null) {
         await messageChannel.send(
@@ -18,9 +22,16 @@ exports.openRegistrations = async (
         return;
     }
 
+    if (messageChannel.id === registrationChannelId) {
+        await messageChannel.send("I cannot watch this same channel.");
+
+        return;
+    }
+
     state.botChannelId = messageChannel.id;
     state.registrationChannelId = registrationChannelId;
     state.registrationDocumentId = registrationDocumentId;
+    state.currentTeamSize = teamSize;
     await messageChannel.send(
         "I am now watching <#" + registrationChannelId + ">.",
     );

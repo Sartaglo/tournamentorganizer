@@ -1,12 +1,8 @@
 "use strict";
 
-exports.tryGetChannel = async (channel, channelId) => {
+exports.tryGetChannel = async (discordClient, channelId) => {
     try {
-        return await channel.client.channels.fetch(
-            channelId,
-            false,
-            true,
-        );
+        return await discordClient.channels.fetch(channelId, false, true);
     } catch (error) {
         console.error(error.stack);
         await channel.send(usage);

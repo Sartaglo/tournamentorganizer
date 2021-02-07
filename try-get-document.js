@@ -2,7 +2,7 @@
 
 const { google } = require("googleapis");
 
-exports.getDocument = (adminId, oAuth2Client, documentId) => new Promise(
+exports.tryGetDocument = (adminId, oAuth2Client, documentId) => new Promise(
     (resolve) => {
         google.docs({ version: "v1", auth: oAuth2Client }).documents.get(
             { documentId },
@@ -21,6 +21,7 @@ exports.getDocument = (adminId, oAuth2Client, documentId) => new Promise(
                         true,
                     );
                     await admin.send(error.stack);
+                    resolve(null);
 
                     return;
                 }

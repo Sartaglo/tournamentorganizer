@@ -1,8 +1,8 @@
 "use strict";
 
-const fs = require("fs");
-const { getDocument } = require("./get-document");
 const { saveRound } = require("./save-round");
+const { sendOutput } = require("./send-output");
+const { tryGetDocument } = require("./try-get-document");
 
 const parseRegistration = (content, startIndex) => {
     let registration = null;
@@ -74,7 +74,12 @@ exports.initialize = async (
     nonHostCount,
     blacklist,
 ) => {
-    const document = await getDocument(adminId, oAuth2Client, documentId);
+    const document = await tryGetDocument(adminId, oAuth2Client, documentId);
+
+    if (document === null) {
+        return;
+    }
+
     const content = document.body.content;
     state.allHostTeams = [];
     state.allNonHostTeams = [];
@@ -254,23 +259,12 @@ exports.initialize = async (
             rooms: [],
         },
     );
-    const fileName = channel.id + "-initialize-output.txt";
     saveRound(channel, state, 1);
     const baseContent = "Initialization complete.";
-    const extraContent = messages.join("\n");
     const files = [
         channel.id + "-round-1-hosts.txt",
         channel.id + "-round-1-non-hosts.txt",
     ];
-
-    if (baseContent.length + 1 + extraContent.length > 2000) {
-        fs.writeFileSync(fileName, messages.join("\r\n") + "\r\n");
-        files.unshift(fileName);
-        await channel.send(
-            baseContent + " Check `" + fileName + "` for additional output.",
-            { files },
-        );
-    } else {
-        await channel.send([baseContent, ...messages].join("\n"), { files });
-    }
+    const fileName = channel.id + "-initialize-output.txt";
+    await sendOutput(channel, baseContent, messages, fileName, files);
 };
