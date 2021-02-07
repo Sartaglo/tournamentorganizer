@@ -325,6 +325,7 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
     const document = await tryGetDocument(
         adminId,
         oAuth2Client,
+        botChannel,
         state.registrationDocumentId,
     );
 

@@ -2,7 +2,12 @@
 
 const { google } = require("googleapis");
 
-exports.tryGetDocument = (adminId, oAuth2Client, documentId) => new Promise(
+exports.tryGetDocument = (
+    adminId,
+    oAuth2Client,
+    channel,
+    documentId,
+) => new Promise(
     (resolve) => {
         google.docs({ version: "v1", auth: oAuth2Client }).documents.get(
             { documentId },

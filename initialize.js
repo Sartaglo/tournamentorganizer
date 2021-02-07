@@ -74,7 +74,12 @@ exports.initialize = async (
     nonHostCount,
     blacklist,
 ) => {
-    const document = await tryGetDocument(adminId, oAuth2Client, documentId);
+    const document = await tryGetDocument(
+        adminId,
+        oAuth2Client,
+        channel,
+        documentId,
+    );
 
     if (document === null) {
         return;
