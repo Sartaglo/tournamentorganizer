@@ -10,7 +10,9 @@ Commands are executed by providing the command and any parameters as needed.
 
 `,open <#registrationChannelId> <registrationDocumentId> <teamSize>`
 
-Starts watching the identified channel for users registering, updating existing registrations, and unregistering. Registrations are validated against the provided team size and stored in the identified Google Doc.
+Starts watching the identified channel for users registering, updating existing
+registrations, and unregistering. Registrations are validated against the
+provided team size and stored in the identified Google Doc.
 
 `,close`
 
@@ -71,13 +73,17 @@ that applies to the current tournament.
 
 ## Registration Commands
 
-`!c Your Mii Name, Teammate 1 Lounge name, Teammate 1 Mii Name, Teammate 2 Lounge Name, Teammate 2 Mii Name`
+`!c Your Mii Name, Teammate 1 Lounge name, Teammate 1 Mii Name, Teammate 2
+Lounge Name, Teammate 2 Mii Name`
 
-Registers your team as a non-hosting team. If you are already registered in a team, it will replace that registration.
+Registers your team as a non-hosting team. If you are already registered in a
+team, it will replace that registration.
 
-`!ch Your Mii Name, Teammate 1 Lounge name, Teammate 1 Mii Name, Teammate 2 Lounge Name, Teammate 2 Mii Name`
+`!ch Your Mii Name, Teammate 1 Lounge name, Teammate 1 Mii Name, Teammate 2
+Lounge Name, Teammate 2 Mii Name`
 
-Registers your team as a hosting team. If you are already registered in a team, it will replace that registration.
+Registers your team as a hosting team. If you are already registered in a team,
+it will replace that registration.
 
 `!d`
 
@@ -99,14 +105,19 @@ rooms do not.
 
 ## Version 2.0 Roadmap
 
-- [x] Update the list of permitted roles for tournament organization (Boss, HTRTA, LTRTA, HTCTA, LTCTA).
+- [x] Update the list of permitted roles for tournament organization (Boss,
+HTRTA, LTRTA, HTCTA, LTCTA).
 - [x] Split up `act-on-message.js` and manage state per Discord channel.
-- [x] Implement a command for players to manage their own registrations, including the ability to update the content of their registration and the ability to unregister.
+- [x] Implement a command for players to manage their own registrations,
+including the ability to update the content of their registration and the
+ability to unregister.
 
 ## Version 3.0 Roadmap
 
 - [ ] Restore bot state from files.
-- [ ] Automatically advance everyone in a room if the room has no more players than the advancement count.
+- [ ] Automatically advance everyone in a room if the room has no more players
+than the advancement count.
 - [ ] Check manual registrations for duplicates or banned players.
 - [ ] Warn about the host registration of hostbanned players.
-- [ ] Reject asterisks, underscores, and colons in registrations to avoid issues with Discord emojis and formatting.
+- [ ] Reject asterisks, underscores, and colons in registrations to avoid issues
+with Discord emojis and formatting.
