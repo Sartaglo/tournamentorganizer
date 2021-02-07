@@ -142,7 +142,7 @@ const isValidLoungeName = (loungeName) =>
 
 const isValidMiiName = (miiName) => typeof miiName === "string"
     && miiName.length > 0
-    && miiName.length <= 10;
+    && miiName.length <= 100;
 
 const parseDocumentRegistration = (teamSize, content) => {
     if (!content.includes(",")) {
