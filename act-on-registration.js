@@ -17,28 +17,28 @@ const listItems = (items) => {
     }
 
     if (items.length === 2) {
-        return items[0] + ' and ' + items[1];
+        return items[0] + " and " + items[1];
     }
 
     return items
         .map(
             (item, index, self) => index === self.length - 1
-                ? ('and ' + item)
+                ? ("and " + item)
                 : item,
         )
-        .join(', ');
+        .join(", ");
 };
 
 const sanitizeInput = (input) => input.replace(/[ \t]+/g, " ").trim();
 
 const stringsEqual = (first, second) => {
-    if (typeof first !== 'string' && typeof second !== 'string') {
+    if (typeof first !== "string" && typeof second !== "string") {
         return true;
     }
 
     if (
-        (typeof first === 'string' && typeof second !== 'string')
-        || (typeof first !== 'string' && typeof second === 'string')
+        (typeof first === "string" && typeof second !== "string")
+        || (typeof first !== "string" && typeof second === "string")
     ) {
         return false;
     }
@@ -516,7 +516,7 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
             "<@"
             + message.author.id
             + "> "
-            + listItems(invalidLoungeNames.map((name) => '`' + name + '`'))
+            + listItems(invalidLoungeNames.map((name) => "`" + name + "`"))
             + " "
             + (
                 invalidLoungeNames.length === 1
@@ -533,14 +533,14 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
     const miiNames = segments
         .filter((_, index) => index === 0 || index % 2 === 1)
         .map((miiName) => sanitizeInput(miiName));
-    const invalidMiiNames = miiNames.filter((miiName) => miiName.length > 10);
+    const invalidMiiNames = miiNames.filter((miiName) => miiName.length > 100);
 
     if (invalidMiiNames.length > 0) {
         await message.channel.send(
             "<@"
             + message.author.id
             + "> "
-            + listItems(invalidMiiNames.map((name) => '`' + name + '`'))
+            + listItems(invalidMiiNames.map((name) => "`" + name + "`"))
             + " "
             + (
                 invalidMiiNames.length === 1
@@ -588,7 +588,7 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
                 ),
             ],
         );
-        await message.react('✅');
+        await message.react("✅");
 
         return;
     }
@@ -614,11 +614,11 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
             +
             message.author.id + "> "
             + listItems(names)
-            + ' '
+            + " "
             + (
                 names.length === 1
-                    ? 'is already registered on a different team.'
-                    : 'are already registered on different teams.'
+                    ? "is already registered on a different team."
+                    : "are already registered on different teams."
             ),
         );
         await message.react("❌");
@@ -685,5 +685,5 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         );
     }
 
-    await message.react('✅');
+    await message.react("✅");
 };
