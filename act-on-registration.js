@@ -282,7 +282,11 @@ const parseRegistrations = async (channel, teamSize, content) => {
     };
 };
 
-const getDeleteContentRange = (registrations, existingRegistration) => {
+const getDeleteContentRange = (
+    registrations,
+    existingRegistration,
+    insertingAfter,
+) => {
     const isLatestRegistration = registrations.indexOf(existingRegistration)
         === registrations.length - 1;
     const isLastRegistrationOfType = registrations
@@ -296,7 +300,8 @@ const getDeleteContentRange = (registrations, existingRegistration) => {
     return {
         deleteContentRange: {
             range: {
-                startIndex: isLatestRegistration && !isLastRegistrationOfType
+                startIndex: (isLatestRegistration && !isLastRegistrationOfType)
+                    || (isLastRegistrationOfType && insertingAfter)
                     ? (existingRegistration.startIndex - 1)
                     : existingRegistration.startIndex,
                 endIndex: isLatestRegistration || isLastRegistrationOfType
@@ -482,7 +487,13 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
             oAuth2Client,
             state,
             document.revisionId,
-            [getDeleteContentRange(result.registrations, existingRegistration)],
+            [
+                getDeleteContentRange(
+                    result.registrations,
+                    existingRegistration,
+                    false,
+                ),
+            ],
         );
         await message.react('✅');
 
@@ -558,14 +569,16 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
     } else {
         const deleteRequest = getDeleteContentRange(
             result.registrations,
-            existingRegistration
+            existingRegistration,
+            existingRegistration.canHost === canHost
         );
 
-        if (insertRequest.insertText.location.index
-            > deleteRequest.deleteContentRange.range.startIndex) {
-            insertRequest.insertText.location.index -=
-                deleteRequest.deleteContentRange.range.endIndex
-                - deleteRequest.deleteContentRange.range.startIndex;
+        if (deleteRequest.deleteContentRange.range.startIndex
+            > insertRequest.insertText.location.index) {
+            deleteRequest.deleteContentRange.range.startIndex +=
+                insertRequest.insertText.text.length;
+            deleteRequest.deleteContentRange.range.endIndex +=
+                insertRequest.insertText.text.length;
         }
 
         await updateDocument(
@@ -574,7 +587,7 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
             oAuth2Client,
             state,
             document.revisionId,
-            [deleteRequest, insertRequest],
+            [insertRequest, deleteRequest],
         );
     }
 
