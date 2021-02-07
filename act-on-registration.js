@@ -29,8 +29,10 @@ const listItems = (items) => {
         .join(", ");
 };
 
-const sanitizeInput = (input) => Array
-    .from(input.replace(/[ \t]+/g, " ").trim())
+const sanitizeWhitespace = (input) => input.replace(/[ \t]+/g, " ").trim();
+
+const sanitizeUnicode = (input) => Array
+    .from(input)
     .map(
         (character) => character.charCodeAt(0) >= 0xE000
             ? ("0x" + character.charCodeAt(0).toString(16).toLocaleUpperCase())
@@ -75,7 +77,7 @@ const parseListItem = (paragraph) => {
             (element) => ({
                 startIndex: element.startIndex,
                 endIndex: element.endIndex,
-                content: sanitizeInput(element.textRun.content),
+                content: sanitizeWhitespace(element.textRun.content),
             }),
         )
         .reduce(
@@ -146,10 +148,6 @@ const getFormatError = (teamSize, content) => {
 const isValidLoungeName = (loungeName) =>
     (/^[A-Za-z0-9 ]{2,15}$/).test(loungeName);
 
-const isValidMiiName = (miiName) => typeof miiName === "string"
-    && miiName.length > 0
-    && miiName.length <= 100;
-
 const parseDocumentRegistration = (teamSize, content) => {
     if (!content.includes(",")) {
         return { messages: [getFormatError(teamSize, content)], players: [] };
@@ -186,7 +184,7 @@ const parseDocumentRegistration = (teamSize, content) => {
                 return;
             }
 
-            if (!isValidMiiName(sanitizedSegment)) {
+            if (sanitizedSegment.length === 0) {
                 messages.push(
                     "Expected `"
                     + sanitizedSegment
@@ -306,6 +304,10 @@ const parseDocumentRegistrations = async (channel, teamSize, content) => {
 };
 
 const parseRegistrationContent = (teamSize, registrationContent) => {
+    if (teamSize === 1) {
+        return [registrationContent];
+    }
+
     if (registrationContent.includes("\n")) {
         if (registrationContent.includes(",")) {
             return registrationContent
@@ -407,7 +409,7 @@ const getDeleteContentRange = (
 }
 
 exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
-    const registrationContent = sanitizeInput(message.content);
+    const registrationContent = sanitizeWhitespace(message.content);
     const canHost = isCanHost(registrationContent);
     const dropping = isDrop(registrationContent);
 
@@ -455,8 +457,8 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
             state.currentTeamSize,
             registrationContent.split(" ").slice(1).join(" "),
         )
-            .map((segment) => sanitizeInput(segment));
-    const registrantName = sanitizeInput(message.member.displayName);
+            .map((segment) => sanitizeWhitespace(segment));
+    const registrantName = sanitizeWhitespace(message.member.displayName);
     const teammateNames = segments.filter(
         (_, index) => index > 0 && index % 2 === 0,
     );
@@ -581,7 +583,7 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
     const miiNames = segments.filter(
         (_, index) => index === 0 || index % 2 === 1,
     );
-    const invalidMiiNames = miiNames.filter((miiName) => miiName.length > 100);
+    const invalidMiiNames = miiNames.filter((miiName) => miiName.length > 10);
 
     if (invalidMiiNames.length > 0) {
         await message.channel.send(
@@ -644,7 +646,10 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         (miiName) => result.registrations.some(
             (registration) => registration !== existingRegistration
                 && registration.players.some(
-                    (player) => stringsEqual(player.miiName, miiName),
+                    (player) => stringsEqual(
+                        player.miiName,
+                        sanitizeUnicode(miiName),
+                    ),
                 ),
         ),
     );
@@ -712,8 +717,11 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
             )
                 + miiNames
                     .map(
-                        (miiName, index) => loungeNames[index]
-                            + separator + miiName,
+                        (miiName, index) => sanitizeUnicode(
+                            loungeNames[index]
+                            + separator
+                            + miiName,
+                        ),
                     )
                     .join(separator),
             location: {
