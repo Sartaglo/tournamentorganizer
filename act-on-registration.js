@@ -384,7 +384,9 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
             (player) => stringsEqual(player.loungeName, registrantName),
         ),
     );
-    const teammateNames = segments.filter((_, index) => index % 2 === 1);
+    const teammateNames = segments
+        .filter((_, index) => index % 2 === 1)
+        .map((teammateName) => sanitizeInput(teammateName));
     const loungeNames = [registrantName, ...teammateNames];
     const invalidNames = [];
 
