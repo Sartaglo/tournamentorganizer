@@ -36,6 +36,40 @@ oAuth2Client.setCredentials(
 
 const states = new Map();
 
+const registrations = [];
+
+let timeout = null;
+
+const actOnRegistrations = async () => {
+    if (registrations.length === 0) {
+        timeout = setTimeout(
+            () => {
+                actOnRegistrations();
+            },
+            1000,
+        );
+
+        return;
+    }
+
+    const cachedRegistrations = registrations.slice();
+
+    while (cachedRegistrations.length > 0) {
+        const { message, state } = cachedRegistrations.shift();
+        registrations.shift();
+        await actOnRegistration(adminId, oAuth2Client, message, state);
+    }
+
+    timeout = setTimeout(
+        () => {
+            actOnRegistrations();
+        },
+        1000,
+    );
+};
+
+actOnRegistrations();
+
 exports.actOnMessage = async (message) => {
     const authorisAdmin = message.author.id === adminId;
 
@@ -50,7 +84,7 @@ exports.actOnMessage = async (message) => {
         );
 
     if (typeof entry !== 'undefined') {
-        await actOnRegistration(adminId, oAuth2Client, message, entry[1]);
+        registrations.push({ message, state: entry[1] });
 
         return;
     }
@@ -566,6 +600,7 @@ exports.actOnMessage = async (message) => {
             return;
         }
 
+        clearTimeout(timeout);
         await message.channel.send("Goodbye.");
         message.client.destroy();
     }
