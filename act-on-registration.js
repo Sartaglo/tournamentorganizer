@@ -456,10 +456,15 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
             registrationContent.split(" ").slice(1).join(" "),
         )
             .map((segment) => sanitizeInput(segment));
-
     const registrantName = sanitizeInput(message.member.displayName);
+    const teammateNames = segments.filter(
+        (_, index) => index > 0 && index % 2 === 0,
+    );
+    const loungeNames = [registrantName, ...teammateNames];
 
-    if (segments.some((segment) => stringsEqual(segment, registrantName))) {
+    if (
+        teammateNames.some((segment) => stringsEqual(segment, registrantName))
+    ) {
         await message.channel.send(
             "<@"
             + message.author.id
@@ -502,10 +507,6 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
             (player) => stringsEqual(player.loungeName, registrantName),
         ),
     );
-    const teammateNames = segments.filter(
-        (_, index) => index > 0 && index % 2 === 0,
-    );
-    const loungeNames = [registrantName, ...teammateNames];
     const duplicateLoungeName = loungeNames.find(
         (loungeName, index) => loungeNames
             .slice(index + 1)
