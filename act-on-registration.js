@@ -593,6 +593,32 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         return;
     }
 
+    const duplicateMiiNames = miiNames.filter(
+        (miiName) => result.registrations.some(
+            (registration) => registration !== existingRegistration
+                && registration.players.some(
+                    (player) => stringsEqual(player.miiName, miiName),
+                ),
+        ),
+    );
+
+    if (duplicateMiiNames.length > 0) {
+        await message.channel.send(
+            "<@"
+            +
+            message.author.id + "> The Mii name"
+            + (duplicateMiiNames.length === 1 ? "" : "s")
+            + " "
+            + listItems(duplicateMiiNames.map((name) => "`" + name + "`"))
+            + " "
+            + (duplicateMiiNames.length === 1 ? "is" : "are")
+            + " taken.",
+        );
+        await message.react("❌");
+
+        return;
+    }
+
     if ((!registrantIsRegistered && existingRegistrations.length > 0)
         || existingRegistrations.length > 1) {
         const names = existingRegistrations
