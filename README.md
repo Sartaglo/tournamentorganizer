@@ -4,9 +4,17 @@ This is a Discord bot (Tournament Organizer#7975) designed to ameliorate the
 process of running a Mario Kart Wii tournament in Mogi Lounge
 (https://discord.gg/HkbxJAM).
 
-## Commands
+## Bot Commands
 
 Commands are executed by providing the command and any parameters as needed.
+
+`,open <#registrationChannelId> <registrationDocumentId> <teamSize>`
+
+Starts watching the identified channel for users registering, updating existing registrations, and unregistering. Registrations are validated against the provided team size and stored in the identified Google Doc.
+
+`,close`
+
+Stops watching the channel identified on open.
 
 `,initialize <documentId> <teamSize> <hostCount> <nonHostCount>
 [blacklistedPlayer,...]`
@@ -60,6 +68,20 @@ aren't done.
 Adds to, removes from, or lists the players banned from the next tournament.
 Note that this blacklist is independent of the list provided to `initialize`
 that applies to the current tournament.
+
+## Registration Commands
+
+`!c Your Mii Name, Teammate 1 Lounge name, Teammate 1 Mii Name, Teammate 2 Lounge Name, Teammate 2 Mii Name`
+
+Registers your team as a non-hosting team. If you are already registered in a team, it will replace that registration.
+
+`!ch Your Mii Name, Teammate 1 Lounge name, Teammate 1 Mii Name, Teammate 2 Lounge Name, Teammate 2 Mii Name`
+
+Registers your team as a hosting team. If you are already registered in a team, it will replace that registration.
+
+`!d`
+
+Unregisters your team.
 
 ## Version 1.0 Roadmap
 
