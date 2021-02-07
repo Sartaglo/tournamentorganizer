@@ -151,7 +151,8 @@ const parseRegistration = (teamSize, content) => {
                     messages.push(
                         "Expected `"
                         + sanitizedSegment
-                        + "` to be a valid Lounge name.",
+                        + "` to be a valid Lounge name "
+                        + "(2-15 letters/numbers/spaces).",
                     );
 
                     return;
@@ -166,7 +167,7 @@ const parseRegistration = (teamSize, content) => {
                 messages.push(
                     "Expected `"
                     + sanitizedSegment
-                    + "` to be a valid Mii name.",
+                    + "` to be a valid Mii name (1-10 characters).",
                 );
 
                 return;
@@ -448,7 +449,7 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
                     ? "is an invalid Mii name"
                     : "are invalid Mii names"
             )
-            + ".",
+            + " (more than 10 characters).",
         );
         await message.react("❌");
 
