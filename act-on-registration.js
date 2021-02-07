@@ -29,7 +29,7 @@ const listItems = (items) => {
         .join(', ');
 };
 
-const sanitizeInput = (input) => input.replace(/\s+/g, " ").trim();
+const sanitizeInput = (input) => input.replace(/[ \t]+/g, " ").trim();
 
 const stringsEqual = (first, second) => {
     if (typeof first !== 'string' && typeof second !== 'string') {
@@ -127,7 +127,7 @@ const isValidMiiName = (miiName) => typeof miiName === "string"
     && miiName.length > 0
     && miiName.length <= 10;
 
-const parseRegistration = (teamSize, content) => {
+const parseDocumentRegistration = (teamSize, content) => {
     if (!content.includes(",")) {
         return { messages: [getFormatError(teamSize, content)], players: [] };
     }
@@ -186,7 +186,7 @@ const parseRegistration = (teamSize, content) => {
     return { messages, players };
 };
 
-const parseRegistrations = async (channel, teamSize, content) => {
+const parseDocumentRegistrations = async (channel, teamSize, content) => {
     const hosts = [];
     const nonHosts = [];
     let hostListId = null;
@@ -253,7 +253,7 @@ const parseRegistrations = async (channel, teamSize, content) => {
                 return;
             }
 
-            const result = parseRegistration(teamSize, listItem.content);
+            const result = parseDocumentRegistration(teamSize, listItem.content);
             messages.push(...result.messages);
 
             if (result.players.length !== teamSize) {
@@ -281,6 +281,80 @@ const parseRegistrations = async (channel, teamSize, content) => {
             === 0,
     };
 };
+
+const parseRegistrationContent = (teamSize, registrationContent) => {
+    if (registrationContent.includes("\n")) {
+        if (registrationContent.includes(",")) {
+            const blah = registrationContent
+                .split("\n")
+                .reduce(
+                    (segments, line, index) => {
+                        const lineSegments = line.split(",");
+
+                        if (index === 0) {
+                            return [...segments, lineSegments[0]];
+                        }
+
+                        return [...segments, lineSegments[0], lineSegments[1]];
+                    },
+                    [],
+                );
+            console.log(blah);
+            return blah;
+        }
+
+        const multiLineBracketRegex = new RegExp(
+            "^"
+            + Array(teamSize)
+                .fill("")
+                .map(
+                    (_, index) => index === 0
+                        ? "(.+?)(?: [\\(\\[][^\\]]+[\\)\\]])?"
+                        : "(.+) [\\(\\[]([^\\]]+)[\\)\\]]",
+                )
+                .join("\n")
+            + "$",
+        );
+        const multiLineMatch = registrationContent.match(multiLineBracketRegex);
+
+        if (multiLineMatch === null) {
+            return null;
+        }
+
+        return multiLineMatch.slice(1);
+    }
+
+    if (registrationContent.includes(",")) {
+        const segments = registrationContent.split(",");
+
+        if (segments.length === teamSize * 2) {
+            segments.splice(1, 1);
+        }
+
+        console.log(segments);
+        return segments;
+    }
+
+    const singleLineBracketRegex = new RegExp(
+        "^"
+        + Array(teamSize)
+            .fill("")
+            .map(
+                (_, index) => index === 0
+                    ? "(.+) [\\(\\[][^\\]]+[\\)\\]]"
+                    : "(.+) [\\(\\[]([^\\]]+)[\\)\\]]",
+            )
+            .join(" ")
+        + "$",
+    );
+    const singleLineMatch = registrationContent.match(singleLineBracketRegex);
+
+    if (singleLineMatch === null) {
+        return null;
+    }
+
+    return singleLineMatch.slice(1);
+}
 
 const getDeleteContentRange = (
     registrations,
@@ -340,7 +414,7 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         return;
     }
 
-    const result = await parseRegistrations(
+    const result = await parseDocumentRegistrations(
         message.channel,
         state.currentTeamSize,
         document.body.content,
@@ -355,29 +429,31 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         await sendOutput(botChannel, "", result.messages, fileName, []);
     }
 
-    const segments = registrationContent.split(" ").slice(1).join(" ").split(",");
+    const segments = parseRegistrationContent(
+        state.currentTeamSize,
+        registrationContent.split(" ").slice(1).join(" "),
+    );
 
-    if (!dropping && segments.length !== (state.currentTeamSize * 2) - 1) {
+    if (!dropping
+        && (segments === null
+            || segments.length !== (state.currentTeamSize * 2) - 1)) {
         const command = canHost ? "!ch" : "!c";
         await message.channel.send(
             "<@"
             + message.author.id
-            + "> You must register in the following format: `"
+            + "> You must register in the following format:`"
             + command
-            + " Your Mii name"
-            + separator
+            + " Your Mii name [Your Lounge name] "
             + Array(state.currentTeamSize - 1)
                 .fill("")
                 .map(
                     (_, index) => "Teammate "
                         + (index + 1)
-                        + " lounge name"
-                        + separator
-                        + "Teammate "
+                        + " Mii name [Teammate "
                         + (index + 1)
-                        + " Mii name",
+                        + " Lounge name]",
                 )
-                .join(separator)
+                .join(" ")
             + "`.",
         );
         await message.react("❌");
@@ -392,7 +468,7 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         ),
     );
     const teammateNames = segments
-        .filter((_, index) => index % 2 === 1)
+        .filter((_, index) => index > 0 && index % 2 === 0)
         .map((teammateName) => sanitizeInput(teammateName));
     const invalidLoungeNames = [];
 
@@ -437,10 +513,10 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         return;
     }
 
-    const invalidMiiNames = segments
-        .filter((_, index) => index % 2 === 0)
-        .map((miiName) => sanitizeInput(miiName))
-        .filter((miiName) => miiName.length > 10);
+    const miiNames = segments
+        .filter((_, index) => index === 0 || index % 2 === 1)
+        .map((miiName) => sanitizeInput(miiName));
+    const invalidMiiNames = miiNames.filter((miiName) => miiName.length > 10);
 
     if (invalidMiiNames.length > 0) {
         await message.channel.send(
@@ -544,10 +620,11 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
                     ? "\n"
                     : ""
             )
-                + registrantName
-                + separator
-                + segments
-                    .map((segment) => sanitizeInput(segment))
+                + miiNames
+                    .map(
+                        (miiName, index) => loungeNames[index]
+                            + separator + miiName,
+                    )
                     .join(separator),
             location: {
                 index: canHost
