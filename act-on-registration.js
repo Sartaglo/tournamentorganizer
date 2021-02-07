@@ -113,7 +113,7 @@ const getFormatError = (teamSize, content) => {
                             + separator
                             + "Player "
                             + (index + 1)
-                            + " lounge name",
+                            + " Lounge name",
                     )
                     .join(separator)
         )
