@@ -274,8 +274,8 @@ const parseRegistrations = async (channel, teamSize, content) => {
     return {
         messages,
         registrations,
-        hostListEndsWithBlank: hosts[hosts.length - 1].content.length === 0,
         nextHostIndex: hostListEndIndex - 1,
+        hostListEndsWithBlank: hosts[hosts.length - 1].content.length === 0,
         nextNonHostIndex: nonHostListEndIndex - 1,
         nonHostListEndsWithBlank: nonHosts[nonHosts.length - 1].content.length
             === 0,
