@@ -387,8 +387,7 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
     const teammateNames = segments
         .filter((_, index) => index % 2 === 1)
         .map((teammateName) => sanitizeInput(teammateName));
-    const loungeNames = [registrantName, ...teammateNames];
-    const invalidNames = [];
+    const invalidLoungeNames = [];
 
     for (const teammateName of teammateNames) {
         const members = await message.guild.members.fetch(
@@ -408,19 +407,19 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
                     || member.user.bot,
             )
         ) {
-            invalidNames.push(teammateName);
+            invalidLoungeNames.push(teammateName);
         }
     }
 
-    if (invalidNames.length > 0) {
+    if (invalidLoungeNames.length > 0) {
         await message.channel.send(
             "<@"
             + message.author.id
             + "> "
-            + listItems(invalidNames.map((name) => '`' + name + '`'))
+            + listItems(invalidLoungeNames.map((name) => '`' + name + '`'))
             + " "
             + (
-                invalidNames.length === 1
+                invalidLoungeNames.length === 1
                     ? "is not the display name of any non-bot user that is"
                     : "are not the display names of any non-bot users that are"
             )
@@ -431,6 +430,31 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         return;
     }
 
+    const invalidMiiNames = segments
+        .filter((_, index) => index % 2 === 0)
+        .map((miiName) => sanitizeInput(miiName))
+        .filter((miiName) => miiName.length > 10);
+
+    if (invalidMiiNames.length > 0) {
+        await message.channel.send(
+            "<@"
+            + message.author.id
+            + "> "
+            + listItems(invalidMiiNames.map((name) => '`' + name + '`'))
+            + " "
+            + (
+                invalidMiiNames.length === 1
+                    ? "is an invalid Mii name"
+                    : "are invalid Mii names"
+            )
+            + ".",
+        );
+        await message.react("❌");
+
+        return;
+    }
+
+    const loungeNames = [registrantName, ...teammateNames];
     const existingRegistrations = result.registrations.filter(
         (registration) => registration.players.some(
             (player) => loungeNames.some(
