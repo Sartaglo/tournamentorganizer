@@ -454,7 +454,21 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         : parseRegistrationContent(
             state.currentTeamSize,
             registrationContent.split(" ").slice(1).join(" "),
+        )
+            .map((segment) => sanitizeInput(segment));
+
+    const registrantName = sanitizeInput(message.member.displayName);
+
+    if (segments.some((segment) => stringsEqual(segment, registrantName))) {
+        await message.channel.send(
+            "<@"
+            + message.author.id
+            + "> You must put yourself first in the registration.",
         );
+        await message.react("❌");
+
+        return;
+    }
 
     if (!dropping
         && (segments === null
@@ -483,18 +497,43 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         return;
     }
 
-    const registrantName = sanitizeInput(message.member.displayName);
     const registrantIsRegistered = result.registrations.some(
         (registration) => registration.players.some(
             (player) => stringsEqual(player.loungeName, registrantName),
         ),
     );
-    const teammateNames = segments
-        .filter((_, index) => index > 0 && index % 2 === 0)
-        .map((teammateName) => sanitizeInput(teammateName));
+    const teammateNames = segments.filter(
+        (_, index) => index > 0 && index % 2 === 0,
+    );
+    const loungeNames = [registrantName, ...teammateNames];
+    const duplicateLoungeName = loungeNames.find(
+        (loungeName, index) => loungeNames
+            .slice(index + 1)
+            .some((name) => stringsEqual(name, loungeName)),
+    );
+
+    if (typeof duplicateLoungeName === "string") {
+        await message.channel.send(
+            "<@"
+            +
+            message.author.id
+            + "> The Lounge name `"
+            + duplicateLoungeName
+            + "` appears more than once.",
+        );
+        await message.react("❌");
+
+        return;
+    }
+
     const invalidLoungeNames = [];
 
-    for (const teammateName of teammateNames) {
+    for (
+        let teammateIndex = 0;
+        teammateIndex < teammateNames.length;
+        teammateIndex += 1
+    ) {
+        const teammateName = teammateNames[teammateIndex];
         const members = await message.guild.members.fetch(
             { query: teammateName, limit: 1000, force: true },
         );
@@ -504,16 +543,19 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
             "All Tracks",
             "Unverified",
         ];
+        const member = members.find(
+            (member) => stringsEqual(member.displayName, teammateName)
+                && !unverifiedRoleNames.includes(member.roles.highest.name)
+                && !member.user.bot,
+        );
 
-        if (
-            members.every(
-                (member) => !stringsEqual(member.displayName, teammateName)
-                    || unverifiedRoleNames.includes(member.roles.highest.name)
-                    || member.user.bot,
-            )
-        ) {
+        if (typeof member === "undefined") {
             invalidLoungeNames.push(teammateName);
+
+            continue;
         }
+
+        loungeNames.splice(teammateIndex + 1, 1, member.displayName);
     }
 
     if (invalidLoungeNames.length > 0) {
@@ -535,9 +577,9 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         return;
     }
 
-    const miiNames = segments
-        .filter((_, index) => index === 0 || index % 2 === 1)
-        .map((miiName) => sanitizeInput(miiName));
+    const miiNames = segments.filter(
+        (_, index) => index === 0 || index % 2 === 1,
+    );
     const invalidMiiNames = miiNames.filter((miiName) => miiName.length > 100);
 
     if (invalidMiiNames.length > 0) {
@@ -559,7 +601,6 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         return;
     }
 
-    const loungeNames = [registrantName, ...teammateNames];
     const existingRegistrations = result.registrations.filter(
         (registration) => registration.players.some(
             (player) => loungeNames.some(
