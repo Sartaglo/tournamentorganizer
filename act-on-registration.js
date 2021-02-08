@@ -341,7 +341,7 @@ const parseRegistrationContent = (teamSize, registrationContent) => {
         const multiLineMatch = registrationContent.match(multiLineBracketRegex);
 
         if (multiLineMatch === null) {
-            return null;
+            return [];
         }
 
         return multiLineMatch.slice(1);
@@ -372,7 +372,7 @@ const parseRegistrationContent = (teamSize, registrationContent) => {
     const singleLineMatch = registrationContent.match(singleLineBracketRegex);
 
     if (singleLineMatch === null) {
-        return null;
+        return [];
     }
 
     return singleLineMatch.slice(1);
@@ -477,9 +477,7 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         return;
     }
 
-    if (!dropping
-        && (segments === null
-            || segments.length !== (state.currentTeamSize * 2) - 1)) {
+    if (!dropping && segments.length !== (state.currentTeamSize * 2) - 1) {
         const command = canHost ? "!ch" : "!c";
         await message.channel.send(
             "<@"
