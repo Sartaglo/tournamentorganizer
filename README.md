@@ -114,6 +114,8 @@ ability to unregister.
 
 ## Version 3.0 Roadmap
 
+- [ ] Support existing registrants to easily swap between hosting and
+non-hosting without copying and pasting their existing registration.
 - [ ] Facilitate the ability to create a category and channels for a new
 tournament, automating role creation and setup of permissions.
 - [ ] Restore bot state from files.
