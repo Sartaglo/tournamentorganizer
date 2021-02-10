@@ -114,6 +114,8 @@ ability to unregister.
 
 ## Version 3.0 Roadmap
 
+- [ ] Facilitate the ability to create a category and channels for a new
+tournament, automating role creation and setup of permissions.
 - [ ] Restore bot state from files.
 - [ ] Automatically advance everyone in a room if the room has no more players
 than the advancement count.
