@@ -114,6 +114,8 @@ ability to unregister.
 
 ## Version 3.0 Roadmap
 
+- [ ] Support a more readable format in the registration document.
+- [ ] Store friend codes with host registrations and manage Tournament Host role.
 - [ ] Support existing registrants to easily swap between hosting and
 non-hosting without copying and pasting their existing registration.
 - [ ] Facilitate the ability to create a category and channels for a new
