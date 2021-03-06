@@ -7,7 +7,12 @@ const { tryGetChannel } = require("./try-get-channel");
 const { tryGetDocument } = require("./try-get-document");
 const { updateDocument } = require("./update-document");
 
-const separator = ", ";
+const unverifiedRoleNames = [
+    "Regular Tracks",
+    "Custom Tracks",
+    "All Tracks",
+    "Unverified",
+];
 
 const listItems = (items) => {
     if (!Array.isArray(items) || items.length === 0) {
@@ -141,7 +146,7 @@ const getFormatError = (teamSize, content, canHost) => {
                             + (index + 1)
                             + " Lounge name]",
                     )
-                    .join(separator)
+                    .join(" ")
         )
         + "`.";
 }
@@ -431,6 +436,36 @@ const getDeleteContentRange = (
     };
 }
 
+const removeHostRoles = async (
+    hostRole,
+    message,
+    existingRegistrations,
+) => {
+    if (hostRole instanceof Role
+        && message.guild.me.hasPermission("MANAGE_ROLES")) {
+        await message.member.roles.remove(hostRole);
+
+        for (const registration of existingRegistrations) {
+            for (const player of registration.players) {
+                const members = await message.guild.members.fetch(
+                    { query: player.loungeName, limit: 1000, force: true }
+                );
+                const member = members.find(
+                    (member) => stringsEqual(
+                        member.displayName,
+                        player.loungeName
+                    )
+                        && !unverifiedRoleNames.includes(
+                            member.roles.highest.name
+                        )
+                        && !member.user.bot
+                );
+                await member.roles.remove(hostRole);
+            }
+        }
+    }
+}
+
 exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
     const registrationContent = sanitizeWhitespace(message.content);
     const canHost = isCanHost(registrationContent);
@@ -550,12 +585,6 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         return;
     }
 
-    const unverifiedRoleNames = [
-        "Regular Tracks",
-        "Custom Tracks",
-        "All Tracks",
-        "Unverified",
-    ];
     const invalidLoungeNames = [];
 
     for (
@@ -625,6 +654,9 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         return;
     }
 
+    const hostRole = message.guild.roles.cache.find(
+        (role) => role.name === state.hostRoleName,
+    );
     const existingRegistrations = result.registrations.filter(
         (registration) => registration.players.some(
             (player) => loungeNames.some(
@@ -644,6 +676,7 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
             return;
         }
 
+        await removeHostRoles(hostRole, message, existingRegistrations);
         await updateDocument(
             adminId,
             message.client,
@@ -727,34 +760,12 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         return;
     }
 
-    const hostRole = message.guild.roles.cache.find(
-        (role) => role.name === state.hostRoleName,
+    await removeHostRoles(
+        hostRole,
+        message,
+        existingRegistrations,
+        unverifiedRoleNames,
     );
-
-    if (hostRole instanceof Role
-        && message.guild.me.hasPermission("MANAGE_ROLES")) {
-        await message.member.roles.remove(hostRole);
-
-        for (const registration of existingRegistrations) {
-            for (const player of registration.players) {
-                const members = await message.guild.members.fetch(
-                    { query: player.loungeName, limit: 1000, force: true },
-                );
-                const member = members.find(
-                    (member) => stringsEqual(
-                        member.displayName,
-                        player.loungeName,
-                    )
-                        && !unverifiedRoleNames.includes(
-                            member.roles.highest.name,
-                        )
-                        && !member.user.bot,
-                );
-                await member.roles.remove(hostRole);
-            }
-        }
-    }
-
     const friendCode = await getFriendCode(message.author.id);
 
     if (canHost) {
