@@ -8,6 +8,7 @@ exports.openRegistrations = async (
     registrationChannelId,
     registrationDocumentId,
     teamSize,
+    hostRoleName,
 ) => {
     const channel = await tryGetChannel(
         messageChannel.client,
@@ -32,6 +33,7 @@ exports.openRegistrations = async (
     state.registrationChannelId = registrationChannelId;
     state.registrationDocumentId = registrationDocumentId;
     state.currentTeamSize = teamSize;
+    state.hostRoleName = hostRoleName;
     await messageChannel.send(
         "I am now watching <#" + registrationChannelId + ">.",
     );

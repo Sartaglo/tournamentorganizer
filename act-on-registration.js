@@ -1,5 +1,6 @@
 "use strict";
 
+const { Role } = require("discord.js");
 const { getFriendCode } = require("./get-friend-code");
 const { sendOutput } = require("./send-output");
 const { tryGetChannel } = require("./try-get-channel");
@@ -549,6 +550,12 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         return;
     }
 
+    const unverifiedRoleNames = [
+        "Regular Tracks",
+        "Custom Tracks",
+        "All Tracks",
+        "Unverified",
+    ];
     const invalidLoungeNames = [];
 
     for (
@@ -560,12 +567,6 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         const members = await message.guild.members.fetch(
             { query: teammateName, limit: 1000, force: true },
         );
-        const unverifiedRoleNames = [
-            "Regular Tracks",
-            "Custom Tracks",
-            "All Tracks",
-            "Unverified",
-        ];
         const member = members.find(
             (member) => stringsEqual(member.displayName, teammateName)
                 && !unverifiedRoleNames.includes(member.roles.highest.name)
@@ -726,19 +727,51 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         return;
     }
 
+    const hostRole = message.guild.roles.cache.find(
+        (role) => role.name === state.hostRoleName,
+    );
+
+    if (hostRole instanceof Role
+        && message.guild.me.hasPermission("MANAGE_ROLES")) {
+        await message.member.roles.remove(hostRole);
+
+        for (const registration of existingRegistrations) {
+            for (const player of registration.players) {
+                const members = await message.guild.members.fetch(
+                    { query: player.loungeName, limit: 1000, force: true },
+                );
+                const member = members.find(
+                    (member) => stringsEqual(
+                        member.displayName,
+                        player.loungeName,
+                    )
+                        && !unverifiedRoleNames.includes(
+                            member.roles.highest.name,
+                        )
+                        && !member.user.bot,
+                );
+                await member.roles.remove(hostRole);
+            }
+        }
+    }
+
     const friendCode = await getFriendCode(message.author.id);
 
-    if (canHost && friendCode === null) {
-        await message.channel.send(
-            "<@"
-            +
-            message.author.id
-            + "> you must set a friend code with `^setfc` in Lounge before"
-            + " registering as a host.",
-        );
-        await message.react("❌");
+    if (canHost) {
+        if (friendCode === null) {
+            await message.channel.send(
+                "<@"
+                +
+                message.author.id
+                + "> you must set a friend code with `^setfc` in Lounge before"
+                + " registering as a host.",
+            );
+            await message.react("❌");
 
-        return;
+            return;
+        }
+
+        await message.member.roles.add(hostRole);
     }
 
     const insertRequest = {

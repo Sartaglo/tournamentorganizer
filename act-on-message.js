@@ -268,11 +268,15 @@ exports.actOnMessage = async (message) => {
             return;
         }
 
-        const usage =
-            "**Usage:** ,open <registrationChannel> <documentId> <teamSize>";
+        const usage = "**Usage:** ,open"
+            + " <registrationChannel>"
+            + " <documentId>"
+            + " <teamSize>"
+            + " [hostRoleName]";
         const result = parameters[0].match(/^<#([0-9]+)>$/);
         const registrationDocumentId = parameters[1];
         const teamSize = Number.parseInt(parameters[2]);
+        const hostRoleName = parameters.slice(3).join(" ");
 
         if (!Array.isArray(result)
             || result.length !== 2
@@ -292,6 +296,7 @@ exports.actOnMessage = async (message) => {
             registrationChannelId,
             registrationDocumentId,
             teamSize,
+            hostRoleName,
         );
     } else if (commandWithoutPrefix === "close") {
         if (!authorisAdmin) {
