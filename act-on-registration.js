@@ -1,5 +1,6 @@
 "use strict";
 
+const { getFriendCode } = require("./get-friend-code");
 const { sendOutput } = require("./send-output");
 const { tryGetChannel } = require("./try-get-channel");
 const { tryGetDocument } = require("./try-get-document");
@@ -118,7 +119,7 @@ const isCanHost = (registrationContent) => {
 const isDrop = (registrationContent) =>
     registrationContent.toLocaleUpperCase().startsWith("!D");
 
-const getFormatError = (teamSize, content) => {
+const getFormatError = (teamSize, content, canHost) => {
     if (!Number.isInteger(teamSize) || teamSize <= 0) {
         return "Expected `" + content + "` to be in the correct format.";
     }
@@ -126,19 +127,18 @@ const getFormatError = (teamSize, content) => {
     return "Expected `"
         + content
         + "` to be in the following format: `"
+        + (canHost ? "XXXX-XXXX-XXXX (host) " : "")
         + (
             teamSize === 1
-                ? ("Lounge name" + separator + "Mii name")
+                ? ("Mii name [Lounge name]")
                 : Array(teamSize)
                     .fill("")
                     .map(
                         (_, index) => "Player "
                             + (index + 1)
-                            + " Mii name"
-                            + separator
-                            + "Player "
+                            + " Mii name [Player "
                             + (index + 1)
-                            + " Lounge name",
+                            + " Lounge name]",
                     )
                     .join(separator)
         )
@@ -148,15 +148,33 @@ const getFormatError = (teamSize, content) => {
 const isValidLoungeName = (loungeName) =>
     (/^[A-Za-z0-9 ]{2,15}$/).test(loungeName);
 
-const parseDocumentRegistration = (teamSize, content) => {
-    if (!content.includes(",")) {
-        return { messages: [getFormatError(teamSize, content)], players: [] };
+const parseDocumentRegistration = (teamSize, content, canHost) => {
+    const registrationRegex = new RegExp(
+        "^"
+        + (canHost ? "[0-9]{4}-[0-9]{4}-[0-9]{4} \\(host\\) " : "")
+        + Array(teamSize)
+            .fill("")
+            .map(() => "(.+) [\\(\\[]([^\\]]+)[\\)\\]]")
+            .join(" ")
+        + "$",
+    );
+
+    const match = content.match(registrationRegex);
+
+    if (match === null) {
+        return {
+            messages: [getFormatError(teamSize, content, canHost)],
+            players: []
+        };
     }
 
-    const segments = content.split(",");
+    const segments = match.slice(1);
 
     if (segments.length !== teamSize * 2) {
-        return { messages: [getFormatError(teamSize, content)], players: [] };
+        return {
+            messages: [getFormatError(teamSize, content, canHost)],
+            players: []
+        };
     }
 
     const messages = [];
@@ -167,7 +185,7 @@ const parseDocumentRegistration = (teamSize, content) => {
                 ? " "
                 : segment.trim();
 
-            if (index % 2 === 0) {
+            if (index % 2 === 1) {
                 if (!isValidLoungeName(sanitizedSegment)) {
                     messages.push(
                         "Expected `"
@@ -274,7 +292,11 @@ const parseDocumentRegistrations = async (channel, teamSize, content) => {
                 return;
             }
 
-            const result = parseDocumentRegistration(teamSize, listItem.content);
+            const result = parseDocumentRegistration(
+                teamSize,
+                listItem.content.trim(),
+                hosts.includes(listItem),
+            );
             messages.push(...result.messages);
 
             if (result.players.length !== teamSize) {
@@ -656,7 +678,8 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         await message.channel.send(
             "<@"
             +
-            message.author.id + "> The Mii name"
+            message.author.id
+            + "> The Mii name"
             + (duplicateMiiNames.length === 1 ? "" : "s")
             + " "
             + listItems(duplicateMiiNames.map((name) => "`" + name + "`"))
@@ -688,7 +711,8 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         await message.channel.send(
             "<@"
             +
-            message.author.id + "> "
+            message.author.id
+            + "> "
             + listItems(names)
             + " "
             + (
@@ -696,6 +720,21 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
                     ? "is already registered on a different team."
                     : "are already registered on different teams."
             ),
+        );
+        await message.react("❌");
+
+        return;
+    }
+
+    const friendCode = await getFriendCode(message.author.id);
+
+    if (canHost && friendCode === null) {
+        await message.channel.send(
+            "<@"
+            +
+            message.author.id
+            + "> you must set a friend code with `^setfc` in Lounge before"
+            + " registering as a host.",
         );
         await message.react("❌");
 
@@ -713,15 +752,17 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
                     ? "\n"
                     : ""
             )
+                + (canHost ? (friendCode + " (host) ") : "")
                 + miiNames
                     .map(
                         (miiName, index) => sanitizeUnicode(
-                            loungeNames[index]
-                            + separator
-                            + miiName,
+                            miiName
+                            + " ["
+                            + loungeNames[index]
+                            + "]",
                         ),
                     )
-                    .join(separator),
+                    .join(" "),
             location: {
                 index: canHost
                     ? result.nextHostIndex
