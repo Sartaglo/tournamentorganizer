@@ -771,7 +771,10 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
             return;
         }
 
-        await message.member.roles.add(hostRole);
+        if (hostRole instanceof Role
+            && message.guild.me.hasPermission("MANAGE_ROLES")) {
+            await message.member.roles.add(hostRole);
+        }
     }
 
     const insertRequest = {
