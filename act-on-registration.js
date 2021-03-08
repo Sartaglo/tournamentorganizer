@@ -633,21 +633,27 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
     const miiNames = segments.filter(
         (_, index) => index === 0 || index % 2 === 1,
     );
-    const invalidMiiNames = miiNames.filter((miiName) => miiName.length > 10);
+    const invalidMiiNames = miiNames.filter(
+        (miiName) => miiName < 1 || miiName.length > 10,
+    );
 
     if (invalidMiiNames.length > 0) {
         await message.channel.send(
             "<@"
             + message.author.id
             + "> "
-            + listItems(invalidMiiNames.map((name) => "`" + name + "`"))
+            + listItems(
+                invalidMiiNames.map(
+                    (name) => "`" + (name.length > 0 ? name : " ") + "`",
+                ),
+            )
             + " "
             + (
                 invalidMiiNames.length === 1
                     ? "is an invalid Mii name"
                     : "are invalid Mii names"
             )
-            + " (more than 10 characters).",
+            + " (not 1-10 characters).",
         );
         await message.react("❌");
 
