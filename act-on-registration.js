@@ -7,11 +7,12 @@ const { tryGetChannel } = require("./try-get-channel");
 const { tryGetDocument } = require("./try-get-document");
 const { updateDocument } = require("./update-document");
 
-const unverifiedRoleNames = [
+const invalidRoleNames = [
     "Regular Tracks",
     "Custom Tracks",
     "All Tracks",
     "Unverified",
+    "Muted",
 ];
 
 const listItems = (items) => {
@@ -455,7 +456,7 @@ const removeHostRoles = async (
                         member.displayName,
                         player.loungeName
                     )
-                        && !unverifiedRoleNames.includes(
+                        && !invalidRoleNames.includes(
                             member.roles.highest.name
                         )
                         && !member.user.bot
@@ -598,7 +599,7 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         );
         const member = members.find(
             (member) => stringsEqual(member.displayName, teammateName)
-                && !unverifiedRoleNames.includes(member.roles.highest.name)
+                && !invalidRoleNames.includes(member.roles.highest.name)
                 && !member.user.bot,
         );
 
@@ -623,7 +624,7 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
                     ? "is not the display name of any non-bot user that is"
                     : "are not the display names of any non-bot users that are"
             )
-            + " verified and currently in this server.",
+            + " not muted, verified, and currently in this server.",
         );
         await message.react("❌");
 
@@ -770,7 +771,7 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         hostRole,
         message,
         existingRegistrations,
-        unverifiedRoleNames,
+        invalidRoleNames,
     );
     const friendCode = await getFriendCode(message.author.id);
 
