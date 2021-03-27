@@ -1,4 +1,4 @@
-# Tournament Organizer 2.0
+# Tournament Organizer 3.0
 
 This is a Discord bot (TO Bot#7975) designed to ameliorate the
 process of running a Mario Kart Wii tournament in Mogi Lounge
