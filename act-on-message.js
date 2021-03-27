@@ -273,6 +273,13 @@ exports.actOnMessage = async (message) => {
             + " <documentId>"
             + " <teamSize>"
             + " [hostRoleName]";
+
+        if (parameters.length === 0) {
+            await message.channel.send(usage);
+
+            return;
+        }
+
         const result = parameters[0].match(/^<#([0-9]+)>$/);
         const registrationDocumentId = parameters[1];
         const teamSize = Number.parseInt(parameters[2]);
