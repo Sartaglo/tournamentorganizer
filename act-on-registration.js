@@ -437,31 +437,46 @@ const getDeleteContentRange = (
     };
 }
 
-const removeHostRoles = async (
+const removeRoles = async (
     hostRole,
+    playerRole,
     message,
     existingRegistrations,
 ) => {
-    if (hostRole instanceof Role
-        && message.guild.me.hasPermission("MANAGE_ROLES")) {
-        await message.member.roles.remove(hostRole);
+    if (!(hostRole instanceof Role)
+        || !message.guild.me.hasPermission("MANAGE_ROLES")) {
+        return;
+    }
 
-        for (const registration of existingRegistrations) {
-            for (const player of registration.players) {
-                const members = await message.guild.members.fetch(
-                    { query: player.loungeName, limit: 1000, force: true }
-                );
-                const member = members.find(
-                    (member) => stringsEqual(
-                        member.displayName,
-                        player.loungeName
-                    )
-                        && !invalidRoleNames.includes(
-                            member.roles.highest.name
-                        )
-                        && !member.user.bot
-                );
+    if (hostRole instanceof Role) {
+        await message.member.roles.remove(hostRole);
+    }
+
+    if (playerRole instanceof Role) {
+        await message.member.roles.remove(playerRole);
+    }
+
+    for (const registration of existingRegistrations) {
+        for (const player of registration.players) {
+            const members = await message.guild.members.fetch(
+                { query: player.loungeName, limit: 1000, force: true }
+            );
+            const member = members.find(
+                (member) => stringsEqual(member.displayName, player.loungeName)
+                    && !invalidRoleNames.includes(member.roles.highest.name)
+                    && !member.user.bot
+            );
+
+            if (typeof member === "undefined") {
+                continue;
+            }
+
+            if (hostRole instanceof Role) {
                 await member.roles.remove(hostRole);
+            }
+
+            if (playerRole instanceof Role) {
+                await member.roles.remove(playerRole);
             }
         }
     }
@@ -673,8 +688,15 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         return;
     }
 
-    const hostRole = message.guild.roles.cache.find(
-        (role) => role.name === state.hostRoleName,
+    const hostRole = await message.guild.roles.fetch(
+        state.hostRoleId,
+        false,
+        true,
+    );
+    const playerRole = await message.guild.roles.fetch(
+        state.playerRoleId,
+        false,
+        true,
     );
     const existingRegistrations = result.registrations.filter(
         (registration) => registration.players.some(
@@ -695,7 +717,7 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
             return;
         }
 
-        await removeHostRoles(hostRole, message, existingRegistrations);
+        await removeRoles(hostRole, playerRole, message, existingRegistrations);
         await updateDocument(
             adminId,
             message.client,
@@ -779,8 +801,9 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         return;
     }
 
-    await removeHostRoles(
+    await removeRoles(
         hostRole,
+        playerRole,
         message,
         existingRegistrations,
         invalidRoleNames,
@@ -793,8 +816,8 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
                 "<@"
                 +
                 message.author.id
-                + "> you must set a friend code with `^setfc` in Lounge before"
-                + " registering as a host.",
+                + "> you must set a friend code with `^setfc` in Lounge"
+                + " before registering as a host.",
             );
             await message.react("❌");
 
@@ -804,6 +827,26 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         if (hostRole instanceof Role
             && message.guild.me.hasPermission("MANAGE_ROLES")) {
             await message.member.roles.add(hostRole);
+        }
+    }
+
+    if (playerRole instanceof Role
+        && message.guild.me.hasPermission("MANAGE_ROLES")) {
+        for (const loungeName of loungeNames) {
+            const members = await message.guild.members.fetch(
+                { query: loungeName, limit: 1000, force: true }
+            );
+            const member = members.find(
+                (member) => stringsEqual(member.displayName, loungeName)
+                    && !invalidRoleNames.includes(member.roles.highest.name)
+                    && !member.user.bot
+            );
+
+            if (typeof member === "undefined") {
+                continue;
+            }
+
+            await member.roles.add(playerRole);
         }
     }
 

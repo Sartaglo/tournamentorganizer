@@ -284,7 +284,7 @@ exports.actOnMessage = async (message) => {
             + " <registrationChannel>"
             + " <documentId>"
             + " <teamSize>"
-            + " [hostRoleName]";
+            + " [hostRoleId[ playerRoleId]]";
 
         if (parameters.length === 0) {
             await message.channel.send(usage);
@@ -295,7 +295,10 @@ exports.actOnMessage = async (message) => {
         const result = parameters[0].match(/^<#([0-9]+)>$/);
         const registrationDocumentId = parameters[1];
         const teamSize = Number.parseInt(parameters[2]);
-        const hostRoleName = parameters.slice(3).join(" ");
+        const hostRoleId = parameters.length > 3 ? parameters[3].trim() : null;
+        const playerRoleId = parameters.length > 4
+            ? parameters[4].trim()
+            : null;
 
         if (!Array.isArray(result)
             || result.length !== 2
@@ -316,7 +319,8 @@ exports.actOnMessage = async (message) => {
             registrationChannelId,
             registrationDocumentId,
             teamSize,
-            hostRoleName,
+            hostRoleId,
+            playerRoleId,
         );
     } else if (commandWithoutPrefix === "close") {
         if (!authorisAdmin || !message.guild) {

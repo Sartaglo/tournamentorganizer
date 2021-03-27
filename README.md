@@ -8,11 +8,12 @@ process of running a Mario Kart Wii tournament in Mogi Lounge
 
 Commands are executed by providing the command and any parameters as needed.
 
-`,open <#registrationChannelId> <registrationDocumentId> <teamSize>`
+`,open <#registrationChannelId> <registrationDocumentId> <teamSize> [hostRoleId[ playerRoleId]]`
 
 Starts watching the identified channel for users registering, updating existing
 registrations, and unregistering. Registrations are validated against the
-provided team size and stored in the identified Google Doc.
+provided team size and stored in the identified Google Doc. If the host role and
+player role IDs are provided, those roles are managed as part of registration.
 
 `,close`
 
@@ -119,6 +120,9 @@ ability to unregister.
 - [x] Manage Tournament Host role.
 - [x] Prevent teammates with the Muted role.
 - [x] Check registrations against a list of censored words.
+- [x] Manage player role on registrations.
+
+## Version 4.0 Roadmap
 - [ ] Support existing registrants to easily swap between hosting and
 non-hosting without copying and pasting their existing registration.
 - [ ] Facilitate the ability to create a category and channels for a new
