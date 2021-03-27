@@ -634,9 +634,21 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
     const miiNames = segments.filter(
         (_, index) => index === 0 || index % 2 === 1,
     );
-    const invalidMiiNames = miiNames.filter(
-        (miiName) => miiName < 1 || miiName.length > 10,
-    );
+    const invalidMiiNames = miiNames
+        .filter(
+            (miiName) => miiName < 1
+                || miiName.length > 10
+                || (state.censoredRegex instanceof RegExp
+                    && state.censoredRegex.test(miiName)),
+        )
+        .map(
+            (miiName) => state.censoredRegex instanceof RegExp
+                ? miiName.replace(
+                    state.censoredRegex,
+                    (match) => Array(match.length).fill("*").join(''),
+                )
+                : miiName,
+        );
 
     if (invalidMiiNames.length > 0) {
         await message.channel.send(
@@ -654,7 +666,7 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
                     ? "is an invalid Mii name"
                     : "are invalid Mii names"
             )
-            + " (not 1-10 characters).",
+            + ".",
         );
         await message.react("❌");
 

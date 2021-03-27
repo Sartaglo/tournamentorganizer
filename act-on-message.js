@@ -7,6 +7,7 @@ const { advance } = require("./advance");
 const { getRoomResults } = require("./get-room-results");
 const { getRoundStatus } = require("./get-round-status");
 const { initialize } = require("./initialize");
+const { loadCensoredRegexes } = require("./load-censored-regexes");
 const { makeRooms } = require("./make-rooms");
 const { openRegistrations } = require("./open-registrations");
 const { registerHost } = require("./register-host");
@@ -124,6 +125,7 @@ exports.actOnMessage = async (message) => {
                 currentRoundNumber: 1,
                 rounds: new Map(),
                 blacklist: [],
+                censoredRegex: null,
             },
         );
     }
@@ -185,7 +187,7 @@ exports.actOnMessage = async (message) => {
             await message.channel.send("Sent authorization URL.");
         }
     } else if (commandWithoutPrefix === "authenticate") {
-        if (message.guild || !authorisAdmin) {
+        if (!authorisAdmin || message.guild) {
             return;
         }
 
@@ -208,7 +210,7 @@ exports.actOnMessage = async (message) => {
             await admin.send(error.stack);
         }
     } else if (commandWithoutPrefix === "guilds") {
-        if (message.guild || !authorisAdmin) {
+        if (!authorisAdmin || message.guild) {
             return;
         }
 
@@ -227,7 +229,7 @@ exports.actOnMessage = async (message) => {
             await admin.send(error.stack);
         }
     } else if (commandWithoutPrefix === "leave") {
-        if (message.guild || !authorisAdmin) {
+        if (!authorisAdmin || message.guild) {
             return;
         }
 
@@ -253,8 +255,18 @@ exports.actOnMessage = async (message) => {
             console.error(error.stack);
             await admin.send(error.stack);
         }
+    } else if (commandWithoutPrefix === "load") {
+        if (!authorisAdmin || !message.guild) {
+            return;
+        }
+
+        await loadCensoredRegexes(
+            message.channel,
+            states.get(message.channel.id),
+            true,
+        );
     } else if (commandWithoutPrefix === "open") {
-        if (!authorisAdmin) {
+        if (!authorisAdmin || !message.guild) {
             return;
         }
 
@@ -296,6 +308,7 @@ exports.actOnMessage = async (message) => {
             return;
         }
 
+        await loadCensoredRegexes(message.channel, state, false);
         const registrationChannelId = result[1];
         await openRegistrations(
             message.channel,
@@ -306,7 +319,7 @@ exports.actOnMessage = async (message) => {
             hostRoleName,
         );
     } else if (commandWithoutPrefix === "close") {
-        if (!authorisAdmin) {
+        if (!authorisAdmin || !message.guild) {
             return;
         }
 

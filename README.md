@@ -118,6 +118,7 @@ ability to unregister.
 - [x] Store friend codes with host registrations.
 - [x] Manage Tournament Host role.
 - [x] Prevent teammates with the Muted role.
+- [x] Check registrations against a list of censored words.
 - [ ] Support existing registrants to easily swap between hosting and
 non-hosting without copying and pasting their existing registration.
 - [ ] Facilitate the ability to create a category and channels for a new
