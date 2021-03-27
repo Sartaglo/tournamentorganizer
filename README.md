@@ -121,6 +121,7 @@ ability to unregister.
 - [x] Prevent teammates with the Muted role.
 - [x] Check registrations against a list of censored words.
 - [x] Manage player role on registrations.
+- [x] Log blacklist changes in a globally-dedicated channel.
 
 ## Version 4.0 Roadmap
 - [ ] Support existing registrants to easily swap between hosting and

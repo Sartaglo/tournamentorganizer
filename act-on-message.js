@@ -8,6 +8,7 @@ const { getRoomResults } = require("./get-room-results");
 const { getRoundStatus } = require("./get-round-status");
 const { initialize } = require("./initialize");
 const { loadCensoredRegexes } = require("./load-censored-regexes");
+const { logBlacklist } = require("./log-blacklist");
 const { makeRooms } = require("./make-rooms");
 const { openRegistrations } = require("./open-registrations");
 const { registerHost } = require("./register-host");
@@ -616,8 +617,10 @@ exports.actOnMessage = async (message) => {
                 );
             } else if (subCommand === "add") {
                 await addToBlacklist(message.channel, state, names);
+                await logBlacklist(message.channel, state);
             } else {
                 await removeFromBlacklist(message.channel, state, names);
+                await logBlacklist(message.channel, state);
             }
         } else if (parameters.length === 0) {
             await sendBlacklistMessage(message.channel, state);
