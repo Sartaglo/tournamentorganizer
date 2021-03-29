@@ -74,14 +74,22 @@ that applies to the current tournament.
 
 ## Registration Commands
 
-`!c Your Mii Name, Teammate 1 Lounge name, Teammate 1 Mii Name, Teammate 2
-Lounge Name, Teammate 2 Mii Name`
+### FFA
+`!c Your Mii Name`
+
+### 2v2
+`!c Your Mii Name [Your Lounge name] Teammate 1 Mii Name [Teammate 1 Lounge
+Name]`
+
+### 3v3
+`!c Your Mii Name [Your Lounge name] Teammate 1 Mii Name [Teammate 1 Lounge
+Name] Teammate 2 Mii Name [Teammate 2 Mii Name]`
 
 Registers your team as a non-hosting team. If you are already registered in a
 team, it will replace that registration.
 
-`!ch Your Mii Name, Teammate 1 Lounge name, Teammate 1 Mii Name, Teammate 2
-Lounge Name, Teammate 2 Mii Name`
+`!ch Your Mii Name [Your Lounge name] Teammate 1 Mii Name [Teammate 1 Lounge
+Name]`
 
 Registers your team as a hosting team. If you are already registered in a team,
 it will replace that registration.
