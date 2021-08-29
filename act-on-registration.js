@@ -546,7 +546,13 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
             + message.author.id
             + "> You must put yourself first in the registration.",
         );
-        await message.react("❌");
+
+        try {
+            await message.react("❌");
+        } catch (error) {
+            console.error(error);
+            await message.channel.send("❌");
+        }
 
         return;
     }
@@ -571,7 +577,13 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
                 .join(" ")
             + "`.",
         );
-        await message.react("❌");
+
+        try {
+            await message.react("❌");
+        } catch (error) {
+            console.error(error);
+            await message.channel.send("❌");
+        }
 
         return;
     }
@@ -596,7 +608,13 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
             + duplicateLoungeName
             + "` appears more than once.",
         );
-        await message.react("❌");
+
+        try {
+            await message.react("❌");
+        } catch (error) {
+            console.error(error);
+            await message.channel.send("❌");
+        }
 
         return;
     }
@@ -641,7 +659,13 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
             )
             + " not muted, verified, and currently in this server.",
         );
-        await message.react("❌");
+
+        try {
+            await message.react("❌");
+        } catch (error) {
+            console.error(error);
+            await message.channel.send("❌");
+        }
 
         return;
     }
@@ -683,7 +707,13 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
             )
             + ".",
         );
-        await message.react("❌");
+
+        try {
+            await message.react("❌");
+        } catch (error) {
+            console.error(error);
+            await message.channel.send("❌");
+        }
 
         return;
     }
@@ -712,7 +742,13 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
             await message.channel.send(
                 "<@" + message.author.id + "> You are not registered.",
             );
-            await message.react("❌");
+
+            try {
+                await message.react("❌");
+            } catch (error) {
+                console.error(error);
+                await message.channel.send("❌");
+            }
 
             return;
         }
@@ -732,7 +768,13 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
                 ),
             ],
         );
-        await message.react("✅");
+
+        try {
+            await message.react("✅");
+        } catch (error) {
+            console.error(error);
+            await message.channel.send("✅");
+        }
 
         return;
     }
@@ -762,7 +804,13 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
             + (duplicateMiiNames.length === 1 ? "is" : "are")
             + " taken.",
         );
-        await message.react("❌");
+
+        try {
+            await message.react("❌");
+        } catch (error) {
+            console.error(error);
+            await message.channel.send("❌");
+        }
 
         return;
     }
@@ -796,7 +844,13 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
                     : "are already registered on different teams."
             ),
         );
-        await message.react("❌");
+
+        try {
+            await message.react("❌");
+        } catch (error) {
+            console.error(error);
+            await message.channel.send("❌");
+        }
 
         return;
     }
@@ -819,7 +873,13 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
                 + "> you must set a friend code with `^setfc` in Lounge"
                 + " before registering as a host.",
             );
-            await message.react("❌");
+
+            try {
+                await message.react("❌");
+            } catch (error) {
+                console.error(error);
+                await message.channel.send("❌");
+            }
 
             return;
         }
@@ -914,5 +974,10 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         );
     }
 
-    await message.react("✅");
+    try {
+        await message.react("✅");
+    } catch (error) {
+        console.error(error);
+        await message.channel.send("✅");
+    }
 };
