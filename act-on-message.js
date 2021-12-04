@@ -101,6 +101,7 @@ exports.actOnMessage = async (message) => {
         "Admin",
         "Moderators",
         "Tournament Organizers",
+        "Event Organizer",
     ];
 
     if (!authorisAdmin
