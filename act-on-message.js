@@ -270,7 +270,7 @@ exports.actOnMessage = async (message) => {
             true,
         );
     } else if (commandWithoutPrefix === "open") {
-        if (!authorisAdmin || !message.guild) {
+        if (!message.guild) {
             return;
         }
 
