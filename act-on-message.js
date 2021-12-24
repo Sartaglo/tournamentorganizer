@@ -327,7 +327,7 @@ exports.actOnMessage = async (message) => {
             playerRoleId,
         );
     } else if (commandWithoutPrefix === "close") {
-        if (!authorisAdmin || !message.guild) {
+        if (!message.guild) {
             return;
         }
 
