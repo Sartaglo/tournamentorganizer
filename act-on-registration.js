@@ -1,6 +1,6 @@
 "use strict";
 
-const { Role } = require("discord.js");
+const { Role, Guild } = require("discord.js");
 const { getFriendCode } = require("./get-friend-code");
 const { sendOutput } = require("./send-output");
 const { tryGetChannel } = require("./try-get-channel");
@@ -155,7 +155,7 @@ const getFormatError = (teamSize, content, canHost) => {
 const isValidLoungeName = (loungeName) =>
     (/^[A-Za-z0-9 ]{2,15}$/).test(loungeName);
 
-const parseDocumentRegistration = (teamSize, content, canHost) => {
+const parseDocumentRegistration = (guildId, teamSize, content, canHost) => {
     const registrationRegex = new RegExp(
         "^"
         + (canHost ? "[0-9]{4}-[0-9]{4}-[0-9]{4} \\(host\\) " : "")
@@ -193,7 +193,8 @@ const parseDocumentRegistration = (teamSize, content, canHost) => {
                 : segment.trim();
 
             if (index % 2 === 1) {
-                if (!isValidLoungeName(sanitizedSegment)) {
+                // MC Nation (896025772207259688)
+                if (!isValidLoungeName(sanitizedSegment) && guildId !== '896025772207259688') {
                     messages.push(
                         "Expected `"
                         + sanitizedSegment
@@ -300,6 +301,7 @@ const parseDocumentRegistrations = async (channel, teamSize, content) => {
             }
 
             const result = parseDocumentRegistration(
+                channel.guild instanceof Guild ? channel.guild.id : null,
                 teamSize,
                 listItem.content.trim(),
                 hosts.includes(listItem),
