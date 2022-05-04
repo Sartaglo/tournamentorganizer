@@ -445,8 +445,7 @@ const removeRoles = async (
     message,
     existingRegistrations,
 ) => {
-    if (!(hostRole instanceof Role)
-        || !message.guild.me.hasPermission("MANAGE_ROLES")) {
+    if (!message.guild.me.hasPermission("MANAGE_ROLES")) {
         return;
     }
 
