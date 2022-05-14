@@ -550,9 +550,14 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
 
         try {
             await message.react("❌");
-        } catch (error) {
-            console.error(error);
-            await message.channel.send("❌");
+        } catch (reactionError) {
+            console.error(reactionError);
+
+            try {
+                await message.channel.send("❌");
+            } catch (messageError) {
+                console.error(messageError);
+            }
         }
 
         return;
@@ -581,9 +586,14 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
 
         try {
             await message.react("❌");
-        } catch (error) {
-            console.error(error);
-            await message.channel.send("❌");
+        } catch (reactionError) {
+            console.error(reactionError);
+
+            try {
+                await message.channel.send("❌");
+            } catch (messageError) {
+                console.error(messageError);
+            }
         }
 
         return;
@@ -612,9 +622,14 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
 
         try {
             await message.react("❌");
-        } catch (error) {
-            console.error(error);
-            await message.channel.send("❌");
+        } catch (reactionError) {
+            console.error(reactionError);
+
+            try {
+                await message.channel.send("❌");
+            } catch (messageError) {
+                console.error(messageError);
+            }
         }
 
         return;
@@ -663,9 +678,14 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
 
         try {
             await message.react("❌");
-        } catch (error) {
-            console.error(error);
-            await message.channel.send("❌");
+        } catch (reactionError) {
+            console.error(reactionError);
+
+            try {
+                await message.channel.send("❌");
+            } catch (messageError) {
+                console.error(messageError);
+            }
         }
 
         return;
@@ -711,9 +731,14 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
 
         try {
             await message.react("❌");
-        } catch (error) {
-            console.error(error);
-            await message.channel.send("❌");
+        } catch (reactionError) {
+            console.error(reactionError);
+
+            try {
+                await message.channel.send("❌");
+            } catch (messageError) {
+                console.error(messageError);
+            }
         }
 
         return;
@@ -746,9 +771,14 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
 
             try {
                 await message.react("❌");
-            } catch (error) {
-                console.error(error);
-                await message.channel.send("❌");
+            } catch (reactionError) {
+                console.error(reactionError);
+
+                try {
+                    await message.channel.send("❌");
+                } catch (messageError) {
+                    console.error(messageError);
+                }
             }
 
             return;
@@ -772,9 +802,14 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
 
         try {
             await message.react("✅");
-        } catch (error) {
-            console.error(error);
-            await message.channel.send("✅");
+        } catch (reactionError) {
+            console.error(reactionError);
+
+            try {
+                await message.channel.send("✅");
+            } catch (messageError) {
+                console.error(messageError);
+            }
         }
 
         return;
@@ -808,9 +843,14 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
 
         try {
             await message.react("❌");
-        } catch (error) {
-            console.error(error);
-            await message.channel.send("❌");
+        } catch (reactionError) {
+            console.error(reactionError);
+
+            try {
+                await message.channel.send("❌");
+            } catch (messageError) {
+                console.error(messageError);
+            }
         }
 
         return;
@@ -848,9 +888,14 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
 
         try {
             await message.react("❌");
-        } catch (error) {
-            console.error(error);
-            await message.channel.send("❌");
+        } catch (reactionError) {
+            console.error(reactionError);
+
+            try {
+                await message.channel.send("❌");
+            } catch (messageError) {
+                console.error(messageError);
+            }
         }
 
         return;
@@ -877,9 +922,14 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
 
             try {
                 await message.react("❌");
-            } catch (error) {
-                console.error(error);
-                await message.channel.send("❌");
+            } catch (reactionError) {
+                console.error(reactionError);
+
+                try {
+                    await message.channel.send("❌");
+                } catch (messageError) {
+                    console.error(messageError);
+                }
             }
 
             return;
@@ -977,8 +1027,13 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
 
     try {
         await message.react("✅");
-    } catch (error) {
-        console.error(error);
-        await message.channel.send("✅");
+    } catch (reactionError) {
+        console.error(reactionError);
+
+        try {
+            await message.channel.send("✅");
+        } catch (messageError) {
+            console.error(messageError);
+        }
     }
 };
