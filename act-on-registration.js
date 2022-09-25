@@ -152,9 +152,6 @@ const getFormatError = (teamSize, content, canHost) => {
         + "`.";
 }
 
-const isValidLoungeName = (loungeName) =>
-    (/^[A-Za-z0-9 ]{2,15}$/).test(loungeName);
-
 const parseDocumentRegistration = (guildId, teamSize, content, canHost) => {
     const registrationRegex = new RegExp(
         "^"
@@ -193,18 +190,6 @@ const parseDocumentRegistration = (guildId, teamSize, content, canHost) => {
                 : segment.trim();
 
             if (index % 2 === 1) {
-                // MC Nation (896025772207259688)
-                if (!isValidLoungeName(sanitizedSegment) && guildId !== '896025772207259688') {
-                    messages.push(
-                        "Expected `"
-                        + sanitizedSegment
-                        + "` to be a valid Lounge name "
-                        + "(2-15 letters/numbers/spaces).",
-                    );
-
-                    return;
-                }
-
                 players.push({ loungeName: sanitizedSegment });
 
                 return;
