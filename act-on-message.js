@@ -19,22 +19,12 @@ const { setRoundNumber } = require("./set-round-number");
 const { unadvance } = require("./unadvance");
 const { unregister } = require("./unregister");
 
-const adminId = "484822486861611011";
+const adminId = process.env.ADMIN_DISCORD_ID;
 
-const oAuth2Client = new google.auth.OAuth2(
-    process.env.GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_CLIENT_SECRET,
-    process.env.GOOGLE_REDIRECT_URI,
-);
-oAuth2Client.setCredentials(
-    {
-        access_token: process.env.GOOGLE_ACCESS_TOKEN,
-        refresh_token: process.env.GOOGLE_REFRESH_TOKEN,
-        scope: process.env.GOOGLE_SCOPE,
-        token_type: process.env.GOOGLE_TOKEN_TYPE,
-        expiry_date: process.env.GOOGLE_EXPIRY_DATE,
-    },
-);
+const oAuth2Client = new google.auth.GoogleAuth({
+    keyFile: process.env.CREDENTIAL_FILE_NAME,
+    scopes: ['https://www.googleapis.com/auth/documents'],
+});
 
 const states = new Map();
 
