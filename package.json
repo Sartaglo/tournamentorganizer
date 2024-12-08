@@ -3,9 +3,10 @@
     "dependencies": {
         "axios": "0.21.1",
         "discord.js": "12.5.1",
-        "googleapis": "66.0.0"
+        "googleapis": "^144.0.0"
     },
     "scripts": {
         "start": "node main.js"
-    }
+    },
+    "devDependencies": {}
 }
