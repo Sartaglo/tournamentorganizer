@@ -34,6 +34,7 @@ Wii tournament in Mogi Lounge (https://discord.gg/HkbxJAM).
 1. Go to Bot in the left-hand navigation list.
 1. Enter a username, e.g., TO Bot, which will be used by the bot in your Discord server.
 1. Click Reset Token and then note the long string that is presented. **Do not share this token with anyone,** as it grants full control to the Discord bot. It will be used to connect the application code to the Discord bot to provide tournament organizer functionality. You can reset the token as many times as you want, but you will need to restart the bot with the new token each time.
+1. Scroll down a bit and enable Message Content Intent.
 1. Add the Discord bot your server by replacing {id} in the following URL with the Application ID (Discord bot's user ID): `https://discord.com/api/oauth2/authorize?client_id={id}&permissions=0&scope=bot%20applications.commands`
 
     Visit https://discordjs.guide/preparations/adding-your-bot-to-servers.html if you wish to understand this URL better.
