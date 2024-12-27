@@ -6,6 +6,7 @@ const { tryGetChannel } = require("./try-get-channel");
 exports.updateDocument = (
     adminId,
     discordClient,
+    botChannel,
     oAuth2Client,
     state,
     requiredRevisionId,
@@ -28,6 +29,7 @@ exports.updateDocument = (
                         console.error("Error using Google Docs:", error.stack);
                         const channel = await tryGetChannel(
                             discordClient,
+                            botChannel,
                             state.botChannelId,
                         );
 

@@ -13,6 +13,7 @@ exports.openRegistrations = async (
 ) => {
     const channel = await tryGetChannel(
         messageChannel.client,
+        messageChannel,
         registrationChannelId,
     );
 

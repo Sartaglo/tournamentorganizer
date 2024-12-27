@@ -477,7 +477,7 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         return;
     }
 
-    const botChannel = await tryGetChannel(message.client, state.botChannelId);
+    const botChannel = await tryGetChannel(message.client, message.channel, state.botChannelId);
 
     if (botChannel === null) {
         console.error(
@@ -773,6 +773,7 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         await updateDocument(
             adminId,
             message.client,
+            botChannel,
             oAuth2Client,
             state,
             document.revisionId,
@@ -980,6 +981,7 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         await updateDocument(
             adminId,
             message.client,
+            botChannel,
             oAuth2Client,
             state,
             document.revisionId,
@@ -1003,6 +1005,7 @@ exports.actOnRegistration = async (adminId, oAuth2Client, message, state) => {
         await updateDocument(
             adminId,
             message.client,
+            botChannel,
             oAuth2Client,
             state,
             document.revisionId,
